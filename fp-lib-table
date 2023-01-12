@@ -1,0 +1,11 @@
+(fp_lib_table
+  (lib (name RJ45-8N-S)(type Legacy)(uri "$(KIPRJMOD)/CustomFootprints/RJ45-8N-S.mod")(options "")(descr ""))
+  (lib (name Inductors)(type Legacy)(uri "$(KIPRJMOD)/CustomFootprints/Inductors.mod")(options "")(descr ""))
+  (lib (name PELowProfile)(type Legacy)(uri "$(KIPRJMOD)/CustomFootprints/PELowProfile.mod")(options "")(descr ""))
+  (lib (name LCC_LOGO)(type KiCad)(uri "$(KIPRJMOD)/CustomFootprints/LCC_LOGO.pretty")(options "")(descr ""))
+  (lib (name PowerLabels)(type KiCad)(uri "$(KIPRJMOD)/CustomFootprints/PowerLabels.pretty")(options "")(descr ""))
+  (lib (name USB-A-Upright)(type KiCad)(uri "$(KIPRJMOD)/CustomFootprints/USB-A-Upright.pretty")(options "")(descr ""))
+  (lib (name DWSLogoBCU)(type Legacy)(uri "$(KIPRJMOD)/CustomFootprints/DWSLogoBCU.mod")(options "")(descr ""))
+  (lib (name SOIC_Wide)(type KiCad)(uri "$(KIPRJMOD)/CustomFootprints/SOIC_Wide.pretty")(options "")(descr ""))
+  (lib (name SRN1060)(type Legacy)(uri "$(KIPRJMOD)/CustomFootprints/SRN1060.mod")(options "")(descr ""))
+)
