@@ -48,17 +48,6 @@ Comment3 ""
 Comment4 ""
 $EndDescr
 $Comp
-L +5V #PWR029
-U 1 1 6411E143
-P 5600 4700
-F 0 "#PWR029" H 5600 4550 50  0001 C CNN
-F 1 "+5V" H 5600 4840 50  0000 C CNN
-F 2 "" H 5600 4700 50  0001 C CNN
-F 3 "" H 5600 4700 50  0001 C CNN
-	1    5600 4700
-	1    0    0    -1  
-$EndComp
-$Comp
 L AP63205 U401
 U 1 1 6411E144
 P 4275 4775
@@ -182,4 +171,6 @@ Wire Wire Line
 Connection ~ 4275 5225
 Text HLabel 3350 4600 0    60   Input ~ 0
 12-15 Volt input
+Text HLabel 5600 4700 2    60   Output ~ 0
+5V Out
 $EndSCHEMATC
