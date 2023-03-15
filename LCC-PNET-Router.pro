@@ -1,4 +1,4 @@
-update=Thu 12 Jan 2023 11:10:11 AM EST
+update=Wed 15 Mar 2023 10:59:12 AM EDT
 version=1
 last_client=kicad
 [cvpcb]
@@ -84,3 +84,4 @@ LibName29=valves
 LibName30=pocketbeagle
 LibName31=CustomLibraries/lm2574n-5
 LibName32=CustomLibraries/sn65hvd233-ht
+LibName33=CustomLibraries/ap63205
