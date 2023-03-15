@@ -11,5 +11,7 @@ sh -c "if [ \"X`printenv OPENMRNPATH`\" != \"X\" ]; then printenv OPENMRNPATH; \
 
 APP_PATH ?= $(realpath ../..)
 -include ../../config.mk
+INCLUDES += -I$(realpath ../../PNETStack/include)
+SUBDIRS = PNETStack
 include $(OPENMRNPATH)/etc/prog.mk
 
