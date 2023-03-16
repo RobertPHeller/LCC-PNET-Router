@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Thu Mar 16 14:38:39 2023
-//  Last Modified : <230316.1443>
+//  Last Modified : <230316.1628>
 //
 //  Description	
 //
@@ -66,7 +66,7 @@ extern string EMPTY_PAYLOAD;
 struct GenMessage
 {
     GenMessage()
-          : id(0), flags(0)
+          : identifier((Defs::Identifier)0), flagsSrc(0), flagsDst(0)
     {
     }
     
@@ -144,6 +144,7 @@ public:
     /** Constructs an PNET interface.
      * @param executor is the thread that will be used for all processing on
      * this interface.
+     */
     If(ExecutorBase *executor);
 
     /** Destructor */

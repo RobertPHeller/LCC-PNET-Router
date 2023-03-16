@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Wed Mar 15 13:58:09 2023
-#  Last Modified : <230315.1358>
+#  Last Modified : <230316.1622>
 #
 #  Description	
 #
@@ -43,5 +43,5 @@
 ##############################################################################
 
 
-INCLUDES += -I$(realpath ../../../PNETStack/include
+INCLUDES += -I$(realpath ../../../PNETStack/include)
 include $(OPENMRNPATH)/etc/applib.mk

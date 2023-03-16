@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Thu Jan 12 14:03:18 2023
-//  Last Modified : <230112.1431>
+//  Last Modified : <230316.1623>
 //
 //  Description	
 //
@@ -49,6 +49,7 @@ static const char rcsid[] = "@(#) : $Id$";
 #include "openlcb/SimpleStack.hxx"
 #include "openlcb/ConfiguredConsumer.hxx"
 #include "openlcb/ConfiguredProducer.hxx"
+#include "PNETStack.hxx"
 
 #include "config.hxx"
 #include "utils/GpioInitializer.hxx"
@@ -252,6 +253,8 @@ int appl_main(int argc, char *argv[])
     // CAN-bus-specific components, a virtual node, PIP, SNIP, Memory configuration
     // protocol, ACDI, CDI, a bunch of memory spaces, etc.
     openlcb::SimpleCanStack stack(NODE_ID);
+    pnet::PNETCanStack pnet(stack.executor());
+    
     FactoryResetHelper  factory_reset_helper;
     
     // Create the config file

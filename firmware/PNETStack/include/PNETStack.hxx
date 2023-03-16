@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Wed Mar 15 15:13:10 2023
-//  Last Modified : <230315.1540>
+//  Last Modified : <230316.1649>
 //
 //  Description	
 //
@@ -49,6 +49,7 @@
 #include "utils/HubDeviceNonBlock.hxx"
 #include "utils/CanIf.hxx"
 #include "utils/HubDeviceSelect.hxx"
+#include "PNETIfCan.hxx"
 
 namespace pnet
 {
@@ -65,13 +66,12 @@ protected:
         virtual If *iface() = 0;
     };
 public:
-    static const unsigned EXECUTOR_PRIORITIES = 5;
-    
     PNETStackBase(
-       std::function<std::unique_ptr<PhysicalIf>()> create_if_helper);
-    Executor<EXECUTOR_PRIORITIES> *executor()
+        std::function<std::unique_ptr<PhysicalIf>()> create_if_helper,
+                  ExecutorBase *executor);
+    ExecutorBase *executor()
     {
-        return &executor_;
+        return executor_;
     }
     Service *service()
     {
@@ -82,41 +82,65 @@ public:
         return iface_;
     }
     void restart_stack();
-    void loop_executor(bool delay_start = false)
-    {
-        start_stack(delay_start);
-        executor_.thread_body();
-    }
-    void start_after_delay();
-    void start_executor_thread(const char *name, int priority,
-                               size_t stack_size, 
-                               bool delay_start = false)
-    {
-        start_stack(delay_start);
-        executor_.start_thread(name, priority, stack_size);
-    }
 protected:
     void start_stack(bool delay_start);
     virtual void start_iface(bool restart) = 0;
-    Executor<EXECUTOR_PRIORITIES> executor_ {NO_THREAD()};
-    Service service_ {&executor_};
+    ExecutorBase *executor_;
+    Service service_;
     std::unique_ptr<PhysicalIf> ifaceHolder_;
     If *iface_ {ifaceHolder_->iface()};
     
     std::vector<std::unique_ptr<Destructable>> additionalComponents_;
 };
 
-    
+
 class PNETCanStack : public PNETStackBase
 {
 public:
-    PNETCanStack();
+    PNETCanStack(ExecutorBase *executor);
+    
     CanHubFlow *can_hub()
     {
         return &static_cast<CanPhysicalIf *>(ifaceHolder_.get())->canHub0_;
     }
     void add_socketcan_port_select(const char *device, int loopback = 1);
     
+protected:
+    /// Helper function for start_stack et al.
+    void start_iface(bool restart) override;
+    
+    IfCan *if_can()
+    {
+        return &static_cast<CanPhysicalIf *>(ifaceHolder_.get())->ifCan_;
+    }
+    
+private:
+    class CanPhysicalIf : public PhysicalIf
+    {
+    public:
+        CanPhysicalIf(Service *service)
+                    : canHub0_(service)
+              , ifCan_(service->executor(), &canHub0_)
+        {
+        }
+        ~CanPhysicalIf()
+        {
+        }
+        If *iface() override
+        {
+            return &ifCan_;
+        }
+        /// This flow is the connection between the stack and the device
+        /// drivers. It also acts as a hub to multiple different clients or CAN
+        /// ports.
+        CanHubFlow canHub0_;
+        /// Implementation of PNET interface.
+        IfCan ifCan_;
+    };
+    /// Constructor helper function. Creates the specific objects needed for
+    /// the CAN interface to function. Will be called exactly once by the
+    /// constructor of the base class.
+    std::unique_ptr<PhysicalIf> create_if();
 };
 
 }
