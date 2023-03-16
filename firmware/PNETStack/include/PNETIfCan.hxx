@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Thu Mar 16 10:18:14 2023
-//  Last Modified : <230316.1453>
+//  Last Modified : <230316.1510>
 //
 //  Description	
 //
@@ -45,17 +45,10 @@
 
 #include <memory>
 
-#include "PNETDefs.hxx"
-#include "executor/Dispatcher.hxx"
-#include "executor/Service.hxx"
-#include "executor/Executor.hxx"
 #include "executor/StateFlow.hxx"
-#include "utils/Buffer.hxx"
-#include "utils/Queue.hxx"
-#include "utils/Map.hxx"
+#include "PNETIf.hxx"
+#include "PNETDefs.hxx"
 #include "utils/CanIf.hxx"
-
-
 
 namespace pnet
 {
