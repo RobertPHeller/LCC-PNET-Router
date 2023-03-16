@@ -81,3 +81,16 @@ openmrnpath.mk
 #Mac OS X file system artifacts
 .DS_Store
 
+# MEC Backup files
+*#
+
+# Doxygen output files
+latex/*
+html/*
+man/*
+pdf
+
+# Target output files
+Revision.hxxout
+compile_cdi
+firmware_PB
