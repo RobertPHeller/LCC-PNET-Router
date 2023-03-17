@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Thu Mar 16 14:38:39 2023
-//  Last Modified : <230316.1628>
+//  Last Modified : <230317.1424>
 //
 //  Description	
 //
@@ -183,7 +183,11 @@ protected:
 private:
     /// Flow responsible for routing incoming messages to handlers.
     MessageDispatchFlow dispatcher_;
-
+    
+    friend class TriggerHandler;
+    friend class ControlHandler;
+    friend class DimmerHandler;
+    
     DISALLOW_COPY_AND_ASSIGN(If);
 };
 

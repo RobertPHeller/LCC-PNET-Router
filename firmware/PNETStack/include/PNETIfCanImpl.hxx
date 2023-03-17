@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Thu Mar 16 14:36:31 2023
-//  Last Modified : <230316.1437>
+//  Last Modified : <230317.1323>
 //
 //  Description	
 //
@@ -43,6 +43,61 @@
 #ifndef __PNETIFCANIMPL_HXX
 #define __PNETIFCANIMPL_HXX
 
+#include "executor/StateFlow.hxx"
+#include "PNETIfImpl.hxx"
+
+namespace pnet
+{
+
+/** Implements the write-side conversion logic from generic messages to CAN
+ *  * frames. */
+class CanMessageWriteFlow : public WriteFlowBase
+{
+public:
+    CanMessageWriteFlow(IfCan *if_can) : WriteFlowBase(if_can)
+    {
+    }
+    
+    IfCan *if_can()
+    {
+        return static_cast<IfCan *>(async_if());
+    }
+    
+protected:
+    Action send_to_hardware() override
+    {
+        if (nmsg()->payload.size())
+        {
+            // We have limited space for counting offsets. In practice this
+            // value will be max 10 for certain traction control protocol
+            // messages. Longer data usually travels via datagrams or streams.
+            HASSERT(nmsg()->payload.size() <= 8);
+        }
+        return allocate_and_call(if_can()->frame_write_flow(),
+                                 STATE(fill_can_frame_buffer));
+    }
+private:
+    virtual Action fill_can_frame_buffer()
+    {
+        auto *b = get_allocation_result(if_can()->frame_write_flow());
+        b->set_done(message()->new_child());
+        struct can_frame *f = b->data()->mutable_frame();
+        // Sets the CAN id.
+        SET_CAN_FRAME_ID_EFF(*f, nmsg()->id());
+        
+        const string &data = nmsg()->payload;
+        if (data.size())
+        {
+            HASSERT(data.size() <= 8); // too big frame for global msg
+            memcpy(f->data, data.data(), data.size());
+            f->can_dlc = data.size();
+        }
+        if_can()->frame_write_flow()->send(b);
+        return call_immediately(STATE(send_finished));
+    }
+};
+    
+}
 
 #endif // __PNETIFCANIMPL_HXX
 

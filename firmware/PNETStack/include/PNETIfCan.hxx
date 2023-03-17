@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Thu Mar 16 10:18:14 2023
-//  Last Modified : <230316.1510>
+//  Last Modified : <230317.1331>
 //
 //  Description	
 //
@@ -79,7 +79,8 @@ public:
     void add_owned_flow(Executable *e) override;
 private:
     friend class CanFrameWriteFlow; // accesses the device and the hubport.
-
+    
+    
     /// Various implementation control flows that this interface owns.
     std::vector<std::unique_ptr<Executable>> ownedFlows_;
 

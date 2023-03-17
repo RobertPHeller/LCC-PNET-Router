@@ -1,4 +1,4 @@
-// -!- C++ -!- //////////////////////////////////////////////////////////////
+// -!- c++ -!- //////////////////////////////////////////////////////////////
 //
 //  System        : 
 //  Module        : 
@@ -7,8 +7,8 @@
 //  Date          : $Date$
 //  Author        : $Author$
 //  Created By    : Robert Heller
-//  Created       : Thu Mar 16 16:37:58 2023
-//  Last Modified : <230317.1350>
+//  Created       : Fri Mar 17 16:14:53 2023
+//  Last Modified : <230317.1716>
 //
 //  Description	
 //
@@ -40,49 +40,38 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
-static const char rcsid[] = "@(#) : $Id$";
+#ifndef __PNETDIMMERSERVICE_HXX
+#define __PNETDIMMERSERVICE_HXX
 
-#if defined(__linux__) || defined(__MACH__)
-#include <net/if.h>
-#include <termios.h> /* tc* functions */
-#endif
-#if defined(__linux__)
-#include "utils/HubDeviceSelect.hxx"
-#include <linux/sockios.h>
-#include <sys/ioctl.h>
-#endif
-
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
-#include "PNETStack.hxx"
+#include "PNETIf.hxx"
 
 namespace pnet
 {
 
-PNETStackBase::PNETStackBase(std::function<std::unique_ptr<PhysicalIf>()> create_if_helper,
-                             ExecutorBase *executor)
-      : executor_(executor)
-, service_(executor_)
-, ifaceHolder_(create_if_helper())
+class DimmerHandler : public IncomingMessageStateFlow
 {
-}
-
-PNETCanStack::PNETCanStack(ExecutorBase *executor)
-      : PNETStackBase(std::bind(&PNETCanStack::create_if, this),executor)
-{
-}
-
-std::unique_ptr<PNETCanStack::PhysicalIf> PNETCanStack::create_if()
-{
-    return std::unique_ptr<PhysicalIf>(new CanPhysicalIf(service()));
-}
-
-void PNETCanStack::start_iface(bool restart)
-{
-    if (restart)
+public:
+    DimmerHandler(If *service) : IncomingMessageStateFlow(service)
     {
+        iface()->dispatcher()->register_handler(this,
+                                                Defs::Dimmer,
+                                                0xffffffff);
     }
-}
+    ~DimmerHandler()
+    {
+        iface()->dispatcher()->unregister_handler(this,
+                                                  Defs::Dimmer,
+                                                  0xffffffff);
+    }
+    /// Handler callback for incoming messages.
+    Action entry() override
+    {
+        //GenMessage *m = message()->data();
+        return release_and_exit();
+    }
+private:
+};
 
 }
+#endif // __PNETDIMMERSERVICE_HXX
+

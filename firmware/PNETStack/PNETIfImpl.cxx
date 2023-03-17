@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Thu Mar 16 15:16:01 2023
-//  Last Modified : <230316.1516>
+//  Last Modified : <230317.1340>
 //
 //  Description	
 //
@@ -42,3 +42,15 @@
 
 static const char rcsid[] = "@(#) : $Id$";
 
+#include "PNETIfImpl.hxx"
+
+namespace pnet
+{
+
+StateFlowBase::Action WriteFlowBase::global_entry()
+{
+    async_if()->dispatcher()->send(transfer_message()/*, loopback_prio*/);
+    return release_and_exit();
+}
+
+}

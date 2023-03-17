@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Thu Mar 16 15:15:49 2023
-//  Last Modified : <230316.1515>
+//  Last Modified : <230317.1337>
 //
 //  Description	
 //
@@ -42,3 +42,19 @@
 
 static const char rcsid[] = "@(#) : $Id$";
 
+#include "PNETIf.hxx"
+
+namespace pnet
+{
+
+string EMPTY_PAYLOAD;
+
+If::If(ExecutorBase *executor)
+      : Service(executor)
+      , globalWriteFlow_(nullptr)
+      , dispatcher_(this)
+{
+}
+
+
+}
