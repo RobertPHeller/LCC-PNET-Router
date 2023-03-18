@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Fri Mar 17 16:10:40 2023
-//  Last Modified : <230318.1024>
+//  Last Modified : <230318.1431>
 //
 //  Description	
 //
@@ -49,6 +49,7 @@
 #include "PNETDefs.hxx"
 #include "utils/Singleton.hxx"
 #include "executor/Notifiable.hxx"
+
 namespace pnet
 {
 
@@ -131,33 +132,65 @@ struct TriggerDataHash
     }
 };
 
-typedef std::unordered_multimap<TriggerData, TriggerRegistryEntry,
-TriggerDataHash> TriggerRegistryContainer;
-
-
-class TriggerHandler : public IncomingMessageStateFlow, 
-                       public Singleton<TriggerHandler>
+class TriggerRegistryIterator 
 {
-public:
-    TriggerHandler(If *service) : IncomingMessageStateFlow(service)
+    typedef std::unordered_multimap<TriggerData, TriggerRegistryEntry,
+          TriggerDataHash> TriggerRegistryContainer;
+    TriggerRegistryIterator()
     {
-        iface()->dispatcher()->register_handler(this,
-                                                Defs::Trigger,
-                                                0xffffffff);
+        clear_iteration();
     }
-    ~TriggerHandler()
+    ~TriggerRegistryIterator()
     {
-        iface()->dispatcher()->unregister_handler(this,
-                                                  Defs::Trigger,
-                                                  0xffffffff);
     }
-    /// Handler callback for incoming messages.
-    Action entry() override;
+    TriggerRegistryEntry *next_entry()
+    {
+        if (it_ == last_) return nullptr;
+        TriggerRegistryEntry * h = &*it_;
+        ++it_;
+        return h;
+    }
+    void clear_iteration()
+    {
+        it_ = TriggerRegistryContainer->end();
+        last_ = TriggerRegistryContainer->end();
+    }
+    void init_iteration(TriggerData td)
+    {
+        auto range = registry_.equal_range(td);
+        it_ = range.first;
+        last_ = range.second;
+    }
     void register_handler(const TriggerRegistryEntry &entry);
     void unregister_handler(const TriggerRegistryEntry &entry);
 private:
-    TriggerRegistryContainer registry_;
-    BarrierNotifiable n_;
+    TriggerRegistryContainer registery_;
+    TriggerRegistryContainer::iterator it_;
+    TriggerRegistryContainer::iterator last_;
+};
+
+        
+
+
+
+class TriggerHandler : public Service,
+                       public Singleton<TriggerHandler>
+{
+public:
+    TriggerHandler(If *iface);
+    ~TriggerHandler();
+    
+    /// Handler callback for incoming messages.
+    Action entry() override;
+    void register_handler(const TriggerRegistryEntry &entry)
+    void unregister_handler(const TriggerRegistryEntry &entry);
+    class Impl;
+    Impl *impl()
+    {
+        return impl_.get();
+    }
+private:
+    std::unique_ptr<Impl> impl_;
 };
 
 }

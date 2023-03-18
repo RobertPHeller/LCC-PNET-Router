@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Sat Mar 18 09:22:40 2023
-//  Last Modified : <230318.1115>
+//  Last Modified : <230318.1413>
 //
 //  Description	
 //
@@ -47,6 +47,36 @@ static const char rcsid[] = "@(#) : $Id$";
 namespace pnet
 {
 
+TriggerHandler::TriggerHandler(If *iface)
+      : Service(iface->executor())
+{
+    impl_.reset(new Impl(this));
+    impl()->ownedFlows_.emplace_back(new TriggerInteratorFlow(iface,this))
+}
+
+TriggerHandler::~TriggerHandler()
+{
+}
+
+TriggerInteratorFlow::TriggerInteratorFlow(If *if, 
+                                           TriggerHandler *trigger_handler)
+      : IncomingMessageStateFlow(if)
+      , trigger_handler_(trigger_handler)
+{
+    
+    iface()->dispatcher()->register_handler(this,
+                                            Defs::Trigger,
+                                            0xffffffff);
+}
+
+TriggerInteratorFlow::~TriggerInteratorFlow()
+{
+    iface()->dispatcher()->unregister_handler(this,
+                                              Defs::Trigger,
+                                              0xffffffff);
+}
+
+
 bool operator==(const TriggerData& lhs, const TriggerData& rhs)
 {
     return (lhs.slot == rhs.slot && lhs.trigger == rhs.trigger);
@@ -61,6 +91,7 @@ StateFlowBase::Action TriggerHandler::entry()
     {
         TriggerData td = it->first;
         TriggerRegistryEntry tre = it->second;
+        n_.reset(this);
         tre.handler->process_trigger(td,&n_);
     }
     return release_and_exit();
