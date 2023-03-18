@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Fri Mar 17 16:14:53 2023
-//  Last Modified : <230317.1716>
+//  Last Modified : <230318.0957>
 //
 //  Description	
 //
@@ -44,11 +44,13 @@
 #define __PNETDIMMERSERVICE_HXX
 
 #include "PNETIf.hxx"
+#include "utils/Singleton.hxx"
 
 namespace pnet
 {
 
-class DimmerHandler : public IncomingMessageStateFlow
+class DimmerHandler : public IncomingMessageStateFlow,
+                      public Singleton<DimmerHandler>
 {
 public:
     DimmerHandler(If *service) : IncomingMessageStateFlow(service)

@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Thu Mar 16 14:35:22 2023
-//  Last Modified : <230317.1608>
+//  Last Modified : <230318.1008>
 //
 //  Description	
 //
@@ -46,6 +46,7 @@ static const char rcsid[] = "@(#) : $Id$";
 #include "PNETIfCan.hxx"
 
 #include "utils/StlMap.hxx"
+#include "utils/Singleton.hxx"
 #include "PNETIfImpl.hxx"
 #include "PNETIfCanImpl.hxx"
 #include "can_frame.h"
@@ -142,7 +143,10 @@ IfCan::IfCan(ExecutorBase *executor, CanHubFlow *device)
     add_owned_flow(new ControlHandler(this));
     add_owned_flow(new DimmerHandler(this));
 }    
-                                
+
+//DEFINE_SINGLETON_INSTANCE(ControlHandler);
+//DEFINE_SINGLETON_INSTANCE(DimmerHandler);
+
 IfCan::~IfCan()
 {
 }

@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Fri Mar 17 16:13:53 2023
-//  Last Modified : <230317.1716>
+//  Last Modified : <230318.0957>
 //
 //  Description	
 //
@@ -44,11 +44,13 @@
 #define __PNETCONTROLSERVICE_HXX
 
 #include "PNETIf.hxx"
+#include "utils/Singleton.hxx"
 
 namespace pnet
 {
 
-class ControlHandler : public IncomingMessageStateFlow
+class ControlHandler : public IncomingMessageStateFlow,
+                       public Singleton<ControlHandler>
 {
 public:
     ControlHandler(If *service) : IncomingMessageStateFlow(service)

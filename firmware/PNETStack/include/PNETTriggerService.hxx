@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Fri Mar 17 16:10:40 2023
-//  Last Modified : <230317.1724>
+//  Last Modified : <230318.1024>
 //
 //  Description	
 //
@@ -47,7 +47,8 @@
 #include <unordered_map>
 #include "PNETIf.hxx"
 #include "PNETDefs.hxx"
-
+#include "utils/Singleton.hxx"
+#include "executor/Notifiable.hxx"
 namespace pnet
 {
 
@@ -57,12 +58,30 @@ struct TriggerData
                 : slot(0), trigger(0)
     {
     }
+    TriggerData(uint8_t slot_, uint8_t trigger_)
+                : slot(slot_), trigger(trigger_)
+    {
+    }
     TriggerData(GenMessage *m)
     {
         const unsigned char *buf = 
               (const unsigned char *) m->payload.data();
         slot = buf[3];
         trigger = buf[4];
+    }
+    void FillMessage(GenMessage *m)
+    {
+        m->identifier = Defs::Trigger;
+        unsigned char buf[8];
+        buf[0] = 0x55;
+        buf[1] = 0xaa;
+        buf[2] = 0x55;
+        buf[3] = slot;
+        buf[4] = trigger;
+        buf[5] = 0;
+        buf[6] = 0;
+        buf[7] = 0;
+        m->payload.assign((const char *)(buf), 8);
     }
     uint8_t slot;
     uint8_t trigger;
@@ -102,10 +121,7 @@ public:
     }
 };
 
-bool operator==(const TriggerData& lhs, const TriggerData& rhs) 
-{
-    return (lhs.slot == rhs.slot && lhs.trigger == rhs.trigger);
-}
+bool operator==(const TriggerData& lhs, const TriggerData& rhs);
 
 struct TriggerDataHash
 {
@@ -119,7 +135,8 @@ typedef std::unordered_multimap<TriggerData, TriggerRegistryEntry,
 TriggerDataHash> TriggerRegistryContainer;
 
 
-class TriggerHandler : public IncomingMessageStateFlow
+class TriggerHandler : public IncomingMessageStateFlow, 
+                       public Singleton<TriggerHandler>
 {
 public:
     TriggerHandler(If *service) : IncomingMessageStateFlow(service)
@@ -135,12 +152,12 @@ public:
                                                   0xffffffff);
     }
     /// Handler callback for incoming messages.
-    Action entry() override
-    {
-        //GenMessage *m = message()->data();
-        return release_and_exit();
-    }
+    Action entry() override;
+    void register_handler(const TriggerRegistryEntry &entry);
+    void unregister_handler(const TriggerRegistryEntry &entry);
 private:
+    TriggerRegistryContainer registry_;
+    BarrierNotifiable n_;
 };
 
 }
