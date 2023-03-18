@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Thu Mar 16 14:35:22 2023
-//  Last Modified : <230318.1008>
+//  Last Modified : <230318.1502>
 //
 //  Description	
 //
@@ -139,13 +139,7 @@ IfCan::IfCan(ExecutorBase *executor, CanHubFlow *device)
     globalWriteFlow_ = gflow;
     add_owned_flow(gflow);
     add_owned_flow(new FrameToGlobalMessageParser(this));
-    add_owned_flow(new TriggerHandler(this));
-    add_owned_flow(new ControlHandler(this));
-    add_owned_flow(new DimmerHandler(this));
 }    
-
-//DEFINE_SINGLETON_INSTANCE(ControlHandler);
-//DEFINE_SINGLETON_INSTANCE(DimmerHandler);
 
 IfCan::~IfCan()
 {

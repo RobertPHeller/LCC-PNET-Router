@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Fri Mar 17 16:10:40 2023
-//  Last Modified : <230318.1431>
+//  Last Modified : <230318.1632>
 //
 //  Description	
 //
@@ -64,6 +64,13 @@ struct TriggerData
     {
     }
     TriggerData(GenMessage *m)
+    {
+        const unsigned char *buf = 
+              (const unsigned char *) m->payload.data();
+        slot = buf[3];
+        trigger = buf[4];
+    }
+    void InitFromGenMessage(GenMessage *m)
     {
         const unsigned char *buf = 
               (const unsigned char *) m->payload.data();
@@ -134,6 +141,7 @@ struct TriggerDataHash
 
 class TriggerRegistryIterator 
 {
+public:
     typedef std::unordered_multimap<TriggerData, TriggerRegistryEntry,
           TriggerDataHash> TriggerRegistryContainer;
     TriggerRegistryIterator()
@@ -146,14 +154,14 @@ class TriggerRegistryIterator
     TriggerRegistryEntry *next_entry()
     {
         if (it_ == last_) return nullptr;
-        TriggerRegistryEntry * h = &*it_;
+        TriggerRegistryEntry * h = &(it_->second);
         ++it_;
         return h;
     }
     void clear_iteration()
     {
-        it_ = TriggerRegistryContainer->end();
-        last_ = TriggerRegistryContainer->end();
+        it_ = registry_.end();
+        last_ = registry_.end();
     }
     void init_iteration(TriggerData td)
     {
@@ -163,8 +171,12 @@ class TriggerRegistryIterator
     }
     void register_handler(const TriggerRegistryEntry &entry);
     void unregister_handler(const TriggerRegistryEntry &entry);
+    TriggerRegistryContainer *registry()
+    {
+        return &registry_;
+    }
 private:
-    TriggerRegistryContainer registery_;
+    TriggerRegistryContainer registry_;
     TriggerRegistryContainer::iterator it_;
     TriggerRegistryContainer::iterator last_;
 };
@@ -180,9 +192,7 @@ public:
     TriggerHandler(If *iface);
     ~TriggerHandler();
     
-    /// Handler callback for incoming messages.
-    Action entry() override;
-    void register_handler(const TriggerRegistryEntry &entry)
+    void register_handler(const TriggerRegistryEntry &entry);
     void unregister_handler(const TriggerRegistryEntry &entry);
     class Impl;
     Impl *impl()

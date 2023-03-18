@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Wed Mar 15 15:13:10 2023
-//  Last Modified : <230316.1649>
+//  Last Modified : <230318.1507>
 //
 //  Description	
 //
@@ -50,6 +50,9 @@
 #include "utils/CanIf.hxx"
 #include "utils/HubDeviceSelect.hxx"
 #include "PNETIfCan.hxx"
+#include "PNETControlService.hxx"
+#include "PNETDimmerService.hxx"
+#include "PNETTriggerService.hxx"
 
 namespace pnet
 {
@@ -89,6 +92,10 @@ protected:
     Service service_;
     std::unique_ptr<PhysicalIf> ifaceHolder_;
     If *iface_ {ifaceHolder_->iface()};
+    
+    ControlHandler controlHandler_ {iface()};
+    DimmerHandler dimmerHandler_ {iface()};
+    TriggerHandler triggerHandler_ {iface()};
     
     std::vector<std::unique_ptr<Destructable>> additionalComponents_;
 };

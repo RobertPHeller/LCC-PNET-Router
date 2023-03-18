@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Sat Mar 18 12:46:33 2023
-//  Last Modified : <230318.1405>
+//  Last Modified : <230318.1628>
 //
 //  Description	
 //
@@ -82,8 +82,12 @@ public:
     Impl(TriggerHandler *service);
     ~Impl();
     std::vector<std::unique_ptr<StateFlowWithQueue>> ownedFlows_;
+    TriggerRegistryIterator *iterator()
+    {
+        return &iterator_;
+    }
     TriggerProcessCallerFlow callerFlow_;
-    TriggerRegistryContainer registry_;
+    TriggerRegistryIterator iterator_;
 };
 
 class TriggerInteratorFlow : public IncomingMessageStateFlow
@@ -91,8 +95,16 @@ class TriggerInteratorFlow : public IncomingMessageStateFlow
 public:
     TriggerInteratorFlow(If *iface, TriggerHandler *trigger_handler);
     ~TriggerInteratorFlow();
+protected:
+    virtual Action entry() override;
+    Action iterate_next();
 private:
+    Action dispatch_trigger(const TriggerRegistryEntry *entry);
     TriggerHandler *trigger_handler_;
+    TriggerData td_;
+    TriggerRegistryIterator *iterator_;
+    Notifiable *incomingDone_;
+    BarrierNotifiable n_;
 };
     
 

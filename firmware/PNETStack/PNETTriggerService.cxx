@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Sat Mar 18 09:22:40 2023
-//  Last Modified : <230318.1413>
+//  Last Modified : <230318.1642>
 //
 //  Description	
 //
@@ -42,7 +42,9 @@
 
 static const char rcsid[] = "@(#) : $Id$";
 
+#include "PNETDefs.hxx"
 #include "PNETTriggerService.hxx"
+#include "PNETTriggerServiceImpl.hxx"
 
 namespace pnet
 {
@@ -51,17 +53,18 @@ TriggerHandler::TriggerHandler(If *iface)
       : Service(iface->executor())
 {
     impl_.reset(new Impl(this));
-    impl()->ownedFlows_.emplace_back(new TriggerInteratorFlow(iface,this))
+    impl()->ownedFlows_.emplace_back(new TriggerInteratorFlow(iface,this));
 }
 
 TriggerHandler::~TriggerHandler()
 {
 }
 
-TriggerInteratorFlow::TriggerInteratorFlow(If *if, 
+TriggerInteratorFlow::TriggerInteratorFlow(If *iface_, 
                                            TriggerHandler *trigger_handler)
-      : IncomingMessageStateFlow(if)
+      : IncomingMessageStateFlow(iface_)
       , trigger_handler_(trigger_handler)
+      , iterator_(trigger_handler->impl()->iterator())
 {
     
     iface()->dispatcher()->register_handler(this,
@@ -76,28 +79,48 @@ TriggerInteratorFlow::~TriggerInteratorFlow()
                                               0xffffffff);
 }
 
+StateFlowBase::Action TriggerInteratorFlow::entry()
+{
+    td_.InitFromGenMessage(nmsg()); 
+    incomingDone_ = message()->new_child();
+    release();
+    iterator_->init_iteration(td_);
+    return yield_and_call(STATE(iterate_next));
+}
+
+StateFlowBase::Action TriggerInteratorFlow::iterate_next()
+{
+    TriggerRegistryEntry *entry = iterator_->next_entry();
+    if (!entry)
+    {
+        if (incomingDone_)
+        {
+            incomingDone_->notify();
+            incomingDone_ = nullptr;
+        }
+        return exit();
+    }
+    return dispatch_trigger(entry);
+}
+
+StateFlowBase::Action TriggerInteratorFlow::dispatch_trigger(const TriggerRegistryEntry *entry)
+{
+    Buffer<TriggerHandlerCall> *b;
+    trigger_handler_->impl()->callerFlow_.pool()->alloc(&b, nullptr);
+    HASSERT(b);
+    b->data()->reset(entry, &td_);
+    n_.reset(this);
+    b->set_done(&n_);
+    trigger_handler_->impl()->callerFlow_.send(b);
+    return wait();
+}
 
 bool operator==(const TriggerData& lhs, const TriggerData& rhs)
 {
     return (lhs.slot == rhs.slot && lhs.trigger == rhs.trigger);
 }
 
-StateFlowBase::Action TriggerHandler::entry()
-{
-    GenMessage *m = message()->data();
-    TriggerData trigger(m);
-    auto range = registry_.equal_range(trigger);
-    for (auto it = range.first; it != range.second; it++)
-    {
-        TriggerData td = it->first;
-        TriggerRegistryEntry tre = it->second;
-        n_.reset(this);
-        tre.handler->process_trigger(td,&n_);
-    }
-    return release_and_exit();
-}
-
-void TriggerHandler::register_handler(const TriggerRegistryEntry &entry)
+void TriggerRegistryIterator::register_handler(const TriggerRegistryEntry &entry)
 {
     auto range = registry_.equal_range(entry.td);
     for (auto it = range.first; it != range.second; it++)
@@ -108,7 +131,12 @@ void TriggerHandler::register_handler(const TriggerRegistryEntry &entry)
     registry_.insert(std::pair<TriggerData, TriggerRegistryEntry>(entry.td,entry));
 }
 
-void TriggerHandler::unregister_handler(const TriggerRegistryEntry &entry)
+void TriggerHandler::register_handler(const TriggerRegistryEntry &entry)
+{
+    impl()->iterator()->register_handler(entry);
+}
+
+void TriggerRegistryIterator::unregister_handler(const TriggerRegistryEntry &entry)
 {
     auto range = registry_.equal_range(entry.td);
     for (auto it = range.first; it != range.second; it++)
@@ -120,6 +148,20 @@ void TriggerHandler::unregister_handler(const TriggerRegistryEntry &entry)
             return;
         }
     }
+}
+
+void TriggerHandler::unregister_handler(const TriggerRegistryEntry &entry)
+{
+    impl()->iterator()->unregister_handler(entry);
+}
+
+TriggerHandler::Impl::Impl(TriggerHandler *service)
+      : callerFlow_(service)
+{
+}
+
+TriggerHandler::Impl::~Impl()
+{
 }
 
 //DEFINE_SINGLETON_INSTANCE(TriggerHandler);
