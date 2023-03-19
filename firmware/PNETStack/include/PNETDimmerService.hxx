@@ -7,8 +7,8 @@
 //  Date          : $Date$
 //  Author        : $Author$
 //  Created By    : Robert Heller
-//  Created       : Fri Mar 17 16:14:53 2023
-//  Last Modified : <230318.0957>
+//  Created       : Fri Mar 17 16:13:53 2023
+//  Last Modified : <230319.1358>
 //
 //  Description	
 //
@@ -43,37 +43,170 @@
 #ifndef __PNETDIMMERSERVICE_HXX
 #define __PNETDIMMERSERVICE_HXX
 
+#include <stdint.h>
+#include <unordered_map>
 #include "PNETIf.hxx"
+#include "PNETDefs.hxx"
 #include "utils/Singleton.hxx"
+#include "executor/Notifiable.hxx"
 
 namespace pnet
 {
 
-class DimmerHandler : public IncomingMessageStateFlow,
-                      public Singleton<DimmerHandler>
+struct DimmerData
 {
-public:
-    DimmerHandler(If *service) : IncomingMessageStateFlow(service)
+    DimmerData()
+                : slot(0), va(0), vb(0), vc(0), vd(0)
     {
-        iface()->dispatcher()->register_handler(this,
-                                                Defs::Dimmer,
-                                                0xffffffff);
     }
-    ~DimmerHandler()
+    DimmerData(uint8_t slot_, uint8_t va_, uint8_t vb_, uint8_t vc_, uint8_t vd_)
+                : slot(slot_), va(va_), vb(vb_), vc(vc_), vd(vd_)
     {
-        iface()->dispatcher()->unregister_handler(this,
-                                                  Defs::Dimmer,
-                                                  0xffffffff);
     }
-    /// Handler callback for incoming messages.
-    Action entry() override
+    DimmerData(GenMessage *m)
     {
-        //GenMessage *m = message()->data();
-        return release_and_exit();
+        const unsigned char *buf = 
+              (const unsigned char *) m->payload.data();
+        slot = buf[1];
+        va = buf[2];
+        vb = buf[3];
+        vc = buf[4];
+        vd = buf[5];
     }
-private:
+    void InitFromGenMessage(GenMessage *m)
+    {
+        const unsigned char *buf = 
+              (const unsigned char *) m->payload.data();
+        slot = buf[1];
+        va = buf[2];
+        vb = buf[3];
+        vc = buf[4];
+        vd = buf[5];
+    }
+    void FillMessage(GenMessage *m)
+    {
+        m->identifier = Defs::Dimmer;
+        unsigned char buf[8];
+        buf[0] = 0xdd;
+        buf[1] = slot;
+        buf[2] = va;
+        buf[3] = vb;
+        buf[4] = vc;
+        buf[5] = vd;
+        buf[6] = 0;
+        buf[7] = 0;
+        m->payload.assign((const char *)(buf), 8);
+    }
+    uint8_t slot;
+    uint8_t va;
+    uint8_t vb;
+    uint8_t vc;
+    uint8_t vd;
 };
 
+class DimmerProcess
+{
+public:
+    virtual ~DimmerProcess()
+    {
+    }
+    
+    virtual void process_dimmer(const DimmerData &cd,
+                                 BarrierNotifiable *done) = 0;
+};
+
+class DimmerRegistryEntry
+{
+public:
+    DimmerData cd;
+    DimmerProcess *handler;
+    uint32_t user_arg;
+    DimmerRegistryEntry(DimmerProcess *_handler,
+                         const DimmerData &_cd)
+                : cd(_cd)
+          , handler(_handler)
+          , user_arg(0)
+    {
+    }
+    DimmerRegistryEntry(DimmerProcess *_handler,
+                         const DimmerData &_cd,
+                         unsigned _user_arg)
+                : cd(_cd)
+          , handler(_handler)
+          , user_arg(_user_arg)
+    {
+    }
+};
+
+bool operator==(const DimmerData& lhs, const DimmerData& rhs);
+struct DimmerDataHash
+{
+    std::size_t operator()(DimmerData const& cd) const
+    {
+        return ((cd.va << 24) | (cd.vb << 16) | (cd.vc << 8) | cd.vd);
+    }
+};
+
+class DimmerRegistryIterator
+{
+public:
+    DimmerRegistryIterator()
+    {
+        clear_iteration();
+    }
+    ~DimmerRegistryIterator()
+    {
+    }
+    DimmerRegistryEntry *next_entry()
+    {
+        if (it_ == last_) return nullptr;
+        DimmerRegistryEntry * h = &(it_->second);
+        ++it_; 
+        return h; 
+    }
+    void clear_iteration()
+    {
+        it_ = registry_.end();
+        last_ = registry_.end();
+    }
+    void init_iteration(DimmerData cd)
+    {
+        auto range = registry_.equal_range(cd);
+        it_ = range.first;
+        last_ = range.second;
+    }
+    void register_handler(const DimmerRegistryEntry &entry);
+    void unregister_handler(const DimmerRegistryEntry &entry);
+private:
+    typedef std::unordered_multimap<DimmerData, DimmerRegistryEntry,
+          DimmerDataHash> DimmerRegistryContainer;
+    DimmerRegistryContainer registry_;
+    DimmerRegistryContainer::iterator it_;
+    DimmerRegistryContainer::iterator last_;
+};
+
+          
+
+class DimmerHandler : public Service,
+                       public Singleton<DimmerHandler>
+{
+public:
+    DimmerHandler(If *service);
+    ~DimmerHandler();
+    void register_handler(const DimmerRegistryEntry &entry);
+    void unregister_handler(const DimmerRegistryEntry &entry);
+    class Impl;
+    Impl *impl()
+    {
+        return impl_.get();
+    }
+private:
+    std::unique_ptr<Impl> impl_;
+};
+
+
 }
+
+
 #endif // __PNETDIMMERSERVICE_HXX
 

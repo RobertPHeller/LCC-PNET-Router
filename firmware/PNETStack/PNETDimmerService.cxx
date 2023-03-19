@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Sat Mar 18 09:22:40 2023
-//  Last Modified : <230319.1201>
+//  Last Modified : <230319.1359>
 //
 //  Description	
 //
@@ -43,43 +43,43 @@
 static const char rcsid[] = "@(#) : $Id$";
 
 #include "PNETDefs.hxx"
-#include "PNETTriggerService.hxx"
-#include "PNETTriggerServiceImpl.hxx"
+#include "PNETDimmerService.hxx"
+#include "PNETDimmerServiceImpl.hxx"
 
 namespace pnet
 {
 
-TriggerHandler::TriggerHandler(If *iface)
+DimmerHandler::DimmerHandler(If *iface)
       : Service(iface->executor())
 {
     impl_.reset(new Impl(this));
-    impl()->ownedFlows_.emplace_back(new TriggerInteratorFlow(iface,this));
+    impl()->ownedFlows_.emplace_back(new DimmerInteratorFlow(iface,this));
 }
 
-TriggerHandler::~TriggerHandler()
+DimmerHandler::~DimmerHandler()
 {
 }
 
-TriggerInteratorFlow::TriggerInteratorFlow(If *iface_, 
-                                           TriggerHandler *trigger_handler)
+DimmerInteratorFlow::DimmerInteratorFlow(If *iface_, 
+                                           DimmerHandler *Dimmer_handler)
       : IncomingMessageStateFlow(iface_)
-      , trigger_handler_(trigger_handler)
-      , iterator_(trigger_handler->impl()->iterator())
+      , Dimmer_handler_(Dimmer_handler)
+      , iterator_(Dimmer_handler->impl()->iterator())
 {
     
     iface()->dispatcher()->register_handler(this,
-                                            Defs::Trigger,
+                                            Defs::Dimmer,
                                             0xffffffff);
 }
 
-TriggerInteratorFlow::~TriggerInteratorFlow()
+DimmerInteratorFlow::~DimmerInteratorFlow()
 {
     iface()->dispatcher()->unregister_handler(this,
-                                              Defs::Trigger,
+                                              Defs::Dimmer,
                                               0xffffffff);
 }
 
-StateFlowBase::Action TriggerInteratorFlow::entry()
+StateFlowBase::Action DimmerInteratorFlow::entry()
 {
     td_.InitFromGenMessage(nmsg()); 
     incomingDone_ = message()->new_child();
@@ -88,9 +88,9 @@ StateFlowBase::Action TriggerInteratorFlow::entry()
     return yield_and_call(STATE(iterate_next));
 }
 
-StateFlowBase::Action TriggerInteratorFlow::iterate_next()
+StateFlowBase::Action DimmerInteratorFlow::iterate_next()
 {
-    TriggerRegistryEntry *entry = iterator_->next_entry();
+    DimmerRegistryEntry *entry = iterator_->next_entry();
     if (!entry)
     {
         if (incomingDone_)
@@ -100,48 +100,49 @@ StateFlowBase::Action TriggerInteratorFlow::iterate_next()
         }
         return exit();
     }
-    return dispatch_trigger(entry);
+    return dispatch_Dimmer(entry);
 }
 
-StateFlowBase::Action TriggerInteratorFlow::dispatch_trigger(const TriggerRegistryEntry *entry)
+StateFlowBase::Action DimmerInteratorFlow::dispatch_Dimmer(const DimmerRegistryEntry *entry)
 {
-    Buffer<TriggerHandlerCall> *b;
-    trigger_handler_->impl()->callerFlow_.pool()->alloc(&b, nullptr);
+    Buffer<DimmerHandlerCall> *b;
+    Dimmer_handler_->impl()->callerFlow_.pool()->alloc(&b, nullptr);
     HASSERT(b);
     b->data()->reset(entry, &td_);
     n_.reset(this);
     b->set_done(&n_);
-    trigger_handler_->impl()->callerFlow_.send(b);
+    Dimmer_handler_->impl()->callerFlow_.send(b);
     return wait();
 }
 
-bool operator==(const TriggerData& lhs, const TriggerData& rhs)
+bool operator==(const DimmerData& lhs, const DimmerData& rhs)
 {
-    return (lhs.slot == rhs.slot && lhs.trigger == rhs.trigger);
+    return (lhs.slot == rhs.slot && lhs.va == rhs.va &&
+            lhs.vb == rhs.vb && lhs.vc == rhs.vc && lhs.vd == rhs.vd);
 }
 
-void TriggerRegistryIterator::register_handler(const TriggerRegistryEntry &entry)
+void DimmerRegistryIterator::register_handler(const DimmerRegistryEntry &entry)
 {
-    auto range = registry_.equal_range(entry.td);
+    auto range = registry_.equal_range(entry.cd);
     for (auto it = range.first; it != range.second; it++)
     {
-        TriggerRegistryEntry tre = it->second;
+        DimmerRegistryEntry tre = it->second;
         if (tre.handler == entry.handler) return;
     }
-    registry_.insert(std::pair<TriggerData, TriggerRegistryEntry>(entry.td,entry));
+    registry_.insert(std::pair<DimmerData, DimmerRegistryEntry>(entry.cd,entry));
 }
 
-void TriggerHandler::register_handler(const TriggerRegistryEntry &entry)
+void DimmerHandler::register_handler(const DimmerRegistryEntry &entry)
 {
     impl()->iterator()->register_handler(entry);
 }
 
-void TriggerRegistryIterator::unregister_handler(const TriggerRegistryEntry &entry)
+void DimmerRegistryIterator::unregister_handler(const DimmerRegistryEntry &entry)
 {
-    auto range = registry_.equal_range(entry.td);
+    auto range = registry_.equal_range(entry.cd);
     for (auto it = range.first; it != range.second; it++)
     {
-        TriggerRegistryEntry tre = it->second;
+        DimmerRegistryEntry tre = it->second;
         if (tre.handler == entry.handler)
         {
             registry_.erase(it);
@@ -150,29 +151,29 @@ void TriggerRegistryIterator::unregister_handler(const TriggerRegistryEntry &ent
     }
 }
 
-void TriggerHandler::unregister_handler(const TriggerRegistryEntry &entry)
+void DimmerHandler::unregister_handler(const DimmerRegistryEntry &entry)
 {
     impl()->iterator()->unregister_handler(entry);
 }
 
-TriggerHandler::Impl::Impl(TriggerHandler *service)
+DimmerHandler::Impl::Impl(DimmerHandler *service)
       : callerFlow_(service)
 {
 }
 
-TriggerHandler::Impl::~Impl()
+DimmerHandler::Impl::~Impl()
 {
 }
 
-StateFlowBase::Action TriggerProcessCallerFlow::entry()
+StateFlowBase::Action DimmerProcessCallerFlow::entry()
 {
-    TriggerHandlerCall *c = message()->data();
+    DimmerHandlerCall *c = message()->data();
     n_.reset(this);
-    c->registry_entry->handler->process_trigger(c->registry_entry->td, &n_);
+    c->registry_entry->handler->process_dimmer(c->registry_entry->cd, &n_);
     return wait_and_call(STATE(call_done));
 }
 
-StateFlowBase::Action TriggerProcessCallerFlow::call_done()
+StateFlowBase::Action DimmerProcessCallerFlow::call_done()
 {
     return release_and_exit();
 }

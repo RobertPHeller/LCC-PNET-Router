@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Fri Mar 17 16:10:40 2023
-//  Last Modified : <230318.1632>
+//  Last Modified : <230319.1320>
 //
 //  Description	
 //
@@ -142,8 +142,6 @@ struct TriggerDataHash
 class TriggerRegistryIterator 
 {
 public:
-    typedef std::unordered_multimap<TriggerData, TriggerRegistryEntry,
-          TriggerDataHash> TriggerRegistryContainer;
     TriggerRegistryIterator()
     {
         clear_iteration();
@@ -171,19 +169,13 @@ public:
     }
     void register_handler(const TriggerRegistryEntry &entry);
     void unregister_handler(const TriggerRegistryEntry &entry);
-    TriggerRegistryContainer *registry()
-    {
-        return &registry_;
-    }
 private:
+    typedef std::unordered_multimap<TriggerData, TriggerRegistryEntry,
+          TriggerDataHash> TriggerRegistryContainer;
     TriggerRegistryContainer registry_;
     TriggerRegistryContainer::iterator it_;
     TriggerRegistryContainer::iterator last_;
 };
-
-        
-
-
 
 class TriggerHandler : public Service,
                        public Singleton<TriggerHandler>

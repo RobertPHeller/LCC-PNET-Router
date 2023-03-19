@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Fri Mar 17 16:13:53 2023
-//  Last Modified : <230318.0957>
+//  Last Modified : <230319.1356>
 //
 //  Description	
 //
@@ -43,35 +43,159 @@
 #ifndef __PNETCONTROLSERVICE_HXX
 #define __PNETCONTROLSERVICE_HXX
 
+#include <stdint.h>
+#include <unordered_map>
 #include "PNETIf.hxx"
+#include "PNETDefs.hxx"
 #include "utils/Singleton.hxx"
+#include "executor/Notifiable.hxx"
 
 namespace pnet
 {
 
-class ControlHandler : public IncomingMessageStateFlow,
+struct ControlData
+{
+    ControlData()
+                : slot(0), value(0), attributes(0)
+    {
+    }
+    ControlData(uint8_t slot_, uint8_t value_, uint8_t attributes_)
+                : slot(slot_), value(value_), attributes(attributes_)
+    {
+    }
+    ControlData(GenMessage *m)
+    {
+        const unsigned char *buf = 
+              (const unsigned char *) m->payload.data();
+        slot = buf[3];
+        value = buf[4];
+        attributes = buf[5];
+    }
+    void InitFromGenMessage(GenMessage *m)
+    {
+        const unsigned char *buf = 
+              (const unsigned char *) m->payload.data();
+        slot = buf[3];
+        value = buf[4];
+        attributes = buf[5];
+    }
+    void FillMessage(GenMessage *m)
+    {
+        m->identifier = Defs::Control;
+        unsigned char buf[8];
+        buf[0] = 0xaa;
+        buf[1] = 0xaa;
+        buf[2] = 0x55;
+        buf[3] = slot;
+        buf[4] = value;
+        buf[5] = attributes;
+        buf[6] = 0;
+        buf[7] = 0;
+        m->payload.assign((const char *)(buf), 8);
+    }
+    uint8_t slot;
+    uint8_t value;
+    uint8_t attributes;
+};
+
+class ControlProcess
+{
+public:
+    virtual ~ControlProcess()
+    {
+    }
+    
+    virtual void process_control(const ControlData &cd,
+                                 BarrierNotifiable *done) = 0;
+};
+
+class ControlRegistryEntry
+{
+public:
+    ControlData cd;
+    ControlProcess *handler;
+    uint32_t user_arg;
+    ControlRegistryEntry(ControlProcess *_handler,
+                         const ControlData &_cd)
+                : cd(_cd)
+          , handler(_handler)
+          , user_arg(0)
+    {
+    }
+    ControlRegistryEntry(ControlProcess *_handler,
+                         const ControlData &_cd,
+                         unsigned _user_arg)
+                : cd(_cd)
+          , handler(_handler)
+          , user_arg(_user_arg)
+    {
+    }
+};
+
+bool operator==(const ControlData& lhs, const ControlData& rhs);
+struct ControlDataHash
+{
+    std::size_t operator()(ControlData const& cd) const
+    {
+        return ((cd.slot << 16) | (cd.value << 8) | cd.attributes);
+    }
+};
+
+class ControlRegistryIterator
+{
+public:
+    ControlRegistryIterator()
+    {
+        clear_iteration();
+    }
+    ~ControlRegistryIterator()
+    {
+    }
+    ControlRegistryEntry *next_entry()
+    {
+        if (it_ == last_) return nullptr;
+        ControlRegistryEntry * h = &(it_->second);
+        ++it_; 
+        return h; 
+    }
+    void clear_iteration()
+    {
+        it_ = registry_.end();
+        last_ = registry_.end();
+    }
+    void init_iteration(ControlData cd)
+    {
+        auto range = registry_.equal_range(cd);
+        it_ = range.first;
+        last_ = range.second;
+    }
+    void register_handler(const ControlRegistryEntry &entry);
+    void unregister_handler(const ControlRegistryEntry &entry);
+private:
+    typedef std::unordered_multimap<ControlData, ControlRegistryEntry,
+          ControlDataHash> ControlRegistryContainer;
+    ControlRegistryContainer registry_;
+    ControlRegistryContainer::iterator it_;
+    ControlRegistryContainer::iterator last_;
+};
+
+          
+
+class ControlHandler : public Service,
                        public Singleton<ControlHandler>
 {
 public:
-    ControlHandler(If *service) : IncomingMessageStateFlow(service)
+    ControlHandler(If *service);
+    ~ControlHandler();
+    void register_handler(const ControlRegistryEntry &entry);
+    void unregister_handler(const ControlRegistryEntry &entry);
+    class Impl;
+    Impl *impl()
     {
-        iface()->dispatcher()->register_handler(this,
-                                                Defs::Control,
-                                                0xffffffff);
-    }
-    ~ControlHandler()
-    {
-        iface()->dispatcher()->unregister_handler(this,
-                                                  Defs::Control,
-                                                  0xffffffff);
-    }
-    /// Handler callback for incoming messages.
-    Action entry() override
-    {
-        //GenMessage *m = message()->data();
-        return release_and_exit();
+        return impl_.get();
     }
 private:
+    std::unique_ptr<Impl> impl_;
 };
 
 

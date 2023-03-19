@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Wed Mar 15 13:51:40 2023
-#  Last Modified : <230315.1409>
+#  Last Modified : <230319.1219>
 #
 #  Description	
 #
@@ -43,7 +43,7 @@
 ##############################################################################
 
 
-SRCS = ../main.cxx $(wildcard ../*.hxx) \
+SRCS =  ../main.cxx $(wildcard ../*.hxx) \
 	$(wildcard PNETStack/include/*.hxx) \
 	$(wildcard ../targets/*/*.hxx)
 	
@@ -52,8 +52,11 @@ all: docs
 .PHONY:
 docs: html pdf man
 
-html latex man: $(SRCS) Makefile Doxyfile
+html latex : $(SRCS) Makefile Doxyfile
 	doxygen Doxyfile
+	
+man : ../main.cxx
+	doxygen Doxyfile.man
 	
 pdf: latex
 	$(MAKE) -C latex
