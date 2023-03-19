@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Sun Mar 19 14:31:22 2023
-//  Last Modified : <230319.1556>
+//  Last Modified : <230319.1636>
 //
 //  Description	
 //
@@ -43,7 +43,7 @@
 #ifndef __CONFIGUREDPCPNETTRIGGER_HXX
 #define __CONFIGUREDPCPNETTRIGGER_HXX
 
-#include "openlcb/node.hxx"
+#include "openlcb/Node.hxx"
 #include "openlcb/EventHandlerTemplates.hxx"
 #include "openlcb/ConfigRepresentation.hxx"
 #include "utils/ConfigUpdateListener.hxx"
@@ -73,8 +73,8 @@ CDI_GROUP_ENTRY(trigger, openlcb::Uint8ConfigEntry,
 CDI_GROUP_END();
 
 class PCPNetTrigger : public DefaultConfigUpdateListener,
-                           public SimpleEventHandler,
-                           public TriggerProcess
+                           public openlcb::SimpleEventHandler,
+                           public pnet::TriggerProcess
 {
 public:
     PCPNetTrigger(openlcb::Node *node, pnet::PNETCanStack *pnetstack,
@@ -101,8 +101,8 @@ public:
         AutoNotify n(done);
         const openlcb::EventId cfg_event_produced = cfg_.event_produced().read(fd);
         const openlcb::EventId cfg_event_consumed = cfg_.event_consumed().read(fd);
-        const cfg_slot = cfg_.slot().read(fd);
-        const cfg_trigger = cfg_.trigger().read(fd);
+        const uint8_t cfg_slot = cfg_.slot().read(fd);
+        const uint8_t cfg_trigger = cfg_.trigger().read(fd);
         if (cfg_slot != slot_ || cfg_trigger != trigger_)
         {
             unregister_trigger_handler();
@@ -137,19 +137,9 @@ public:
                                   BarrierNotifiable *done) override
     {
     }
-    void handle_producer_identified(const openlcb::EventRegistryEntry &registry_entry, 
-                                    openlcb::EventReport *event, 
-                                    BarrierNotifiable *done) override
-    {
-    }
     void handle_identify_consumer(const openlcb::EventRegistryEntry &registry_entry, 
                                   openlcb::EventReport *event, 
                                   BarrierNotifiable *done) override
-    {
-    }
-    void handle_identify_consumer_identified(const openlcb::EventRegistryEntry &registry_entry, 
-                                             openlcb::EventReport *event, 
-                                             BarrierNotifiable *done) override
     {
     }
     void handle_event_report(const openlcb::EventRegistryEntry &registry_entry, 
@@ -157,7 +147,7 @@ public:
                              BarrierNotifiable *done) override
     {
     }
-    void process_trigger(const TriggerData &td,
+    void process_trigger(const pnet::TriggerData &td,
                          BarrierNotifiable *done)
     {
     }
@@ -170,11 +160,11 @@ private:
     }
     void register_trigger_handler()
     {
-        pnet::TriggerHandler->instance()->register_handler(TriggerRegistryEntry(this,TriggerData(slot_,trigger_)));
+        pnet::TriggerHandler::instance()->register_handler(pnet::TriggerRegistryEntry(this,pnet::TriggerData(slot_,trigger_)));
     }
     void unregister_trigger_handler()
     {
-        pnet::TriggerHandler->instance()->unregister_handler(TriggerRegistryEntry(this,TriggerData(slot_,trigger_)));
+        pnet::TriggerHandler::instance()->unregister_handler(pnet::TriggerRegistryEntry(this,pnet::TriggerData(slot_,trigger_)));
     }
     openlcb::Node *node_;
     const PCPNetTriggerConfig cfg_;

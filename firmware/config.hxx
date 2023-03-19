@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Thu Jan 12 14:23:01 2023
-//  Last Modified : <230112.1429>
+//  Last Modified : <230319.1627>
 //
 //  Description	
 //
@@ -47,6 +47,7 @@
 #include "openlcb/ConfiguredProducer.hxx"
 #include "openlcb/ConfigRepresentation.hxx"
 #include "openlcb/MemoryConfig.hxx"
+#include "PNETStack/include/ConfiguredPCPNetTrigger.hxx"
 
 #include "Hardware.hxx"
 #include "Revision.hxxout"
@@ -71,6 +72,10 @@ extern const SimpleNodeStaticValues SNIP_STATIC_DATA = {
     4,               "Deepwoods Software", HARDWARE_IMPL,
     "linux.armv7a", "1.00"};
 
+#define NUM_TRIGGERS 32
+
+
+using AllTriggers = RepeatedGroup<PCPNetTriggerConfig, NUM_TRIGGERS>;
 
 /// Used for detecting when the config file stems from a different config.hxx
 /// version and needs to be factory reset before using. Change every time that
@@ -83,6 +88,8 @@ CDI_GROUP(IoBoardSegment, Name(HARDWARE_IMPL), Segment(MemoryConfigDefs::SPACE_C
 /// Each entry declares the name of the current entry, then the type and then
 /// optional arguments list.
 CDI_GROUP_ENTRY(internal_config, InternalConfigData);
+CDI_GROUP_ENTRY(triggers, AllTriggers, Name("PNET Triggers"), 
+                Description("PNET Triggers"), RepName("Trigger"));
 CDI_GROUP_END();
 
 /// This segment is only needed temporarily until there is program code to set

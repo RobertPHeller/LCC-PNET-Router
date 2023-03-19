@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Sun Mar 19 15:56:37 2023
-//  Last Modified : <230319.1609>
+//  Last Modified : <230319.1629>
 //
 //  Description	
 //
@@ -54,7 +54,7 @@ namespace pnet
 class WriteHelper : public Executable
 {
 public:
-    typedef PNETStack *stack_type;
+    typedef PNETCanStack *stack_type;
     typedef string payload_type;
     WriteHelper()
     {
@@ -74,7 +74,7 @@ public:
      * @param done will be notified when the packet has been enqueued to the
      * physical layer. If done == nullptr, the sending is invoked synchronously.
      */
-    void WriteAsync(PNETStack *stack, Defs::Identifier ident,
+    void WriteAsync(PNETCanStack *stack, Defs::Identifier ident,
                     const payload_type &buffer, Notifiable *done)
     {
         if (done)
@@ -106,7 +106,7 @@ private:
         HASSERT(0);
     }
     Defs::Identifier ident_;
-    PNETStack *stack_;
+    PNETCanStack *stack_;
     payload_type buffer_;
     BarrierNotifiable done_;
 };
