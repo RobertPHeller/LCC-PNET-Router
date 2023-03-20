@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Sun Mar 19 14:31:22 2023
-//  Last Modified : <230320.1024>
+//  Last Modified : <230320.1102>
 //
 //  Description	
 //
@@ -62,6 +62,11 @@ CDI_GROUP_ENTRY(event_produced, openlcb::EventConfigEntry,
 CDI_GROUP_ENTRY(event_consumed, openlcb::EventConfigEntry,
                 Name("Event Consumed"),
                 Description("(C) This event will cause the defined Trigger to be sent."));
+CDI_GROUP_ENTRY(enabled, openlcb::Uint8ConfigEntry,
+                Min(0), Max(1), Default(0),
+                MapValues("<relation><property>0</property><value>No</value></relation>"
+                          "<relation><property>1</property><value>Yes</value></relation>"),
+                Name("Enable"), Description("Enable this trigger."));
 CDI_GROUP_ENTRY(slot, openlcb::Uint8ConfigEntry,
                 Min(0), Max(31), Default(0),
                 Name("Slot"),
@@ -85,6 +90,7 @@ public:
           , pnetstack_(pnetstack)
           , event_produced_(0)
           , event_consumed_(0)
+          , enabled_(false)
           , slot_(0)
           , trigger_(1)
     {
@@ -103,12 +109,15 @@ public:
         const openlcb::EventId cfg_event_consumed = cfg_.event_consumed().read(fd);
         const uint8_t cfg_slot = cfg_.slot().read(fd);
         const uint8_t cfg_trigger = cfg_.trigger().read(fd);
-        if (cfg_slot != slot_ || cfg_trigger != trigger_)
+        bool cfg_enabled = (bool) cfg_.enabled().read(fd);
+        if (cfg_slot != slot_ || cfg_trigger != trigger_ ||
+            cfg_enabled != enabled_)
         {
-            unregister_trigger_handler();
+            if (enabled_) unregister_trigger_handler();
             slot_ = cfg_slot;
             trigger_ = cfg_trigger;
-            register_trigger_handler();
+            enabled_ = cfg_enabled;
+            if (enabled_) register_trigger_handler();
         }
         if (cfg_event_produced != event_produced_ ||
             cfg_event_consumed != event_consumed_)
@@ -126,6 +135,7 @@ public:
         cfg_.description().write(fd, "");
         CDI_FACTORY_RESET(cfg_.slot);
         CDI_FACTORY_RESET(cfg_.trigger);
+        CDI_FACTORY_RESET(cfg_.enabled);
     }
     void handle_identify_global(const openlcb::EventRegistryEntry &registry_entry, 
                                 openlcb::EventReport *event, 
@@ -177,7 +187,7 @@ public:
                              openlcb::EventReport *event, 
                              BarrierNotifiable *done) override
     {
-        if (event->event == event_consumed_)
+        if (enabled_ && event->event == event_consumed_)
         {
             pnet::TriggerData td(slot_, trigger_);
             pnet::GenMessage m;
@@ -223,6 +233,7 @@ private:
     pnet::PNETCanStack *pnetstack_;
     openlcb::EventId event_produced_;
     openlcb::EventId event_consumed_;
+    bool enabled_;
     uint8_t slot_;
     uint8_t trigger_;
     openlcb::WriteHelper trigger_event_helper;
