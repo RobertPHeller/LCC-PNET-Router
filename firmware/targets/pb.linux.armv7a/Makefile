@@ -13,5 +13,6 @@ APP_PATH ?= $(realpath ../..)
 -include ../../config.mk
 INCLUDES += -I$(realpath ../../PNETStack/include)
 SUBDIRS = PNETStack
+GITREPOS += $(realpath $(CURDIR)/../../..)
 include $(OPENMRNPATH)/etc/prog.mk
 

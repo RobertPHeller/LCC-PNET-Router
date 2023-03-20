@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Thu Jan 12 14:23:01 2023
-//  Last Modified : <230319.1627>
+//  Last Modified : <230320.1358>
 //
 //  Description	
 //
@@ -17,28 +17,39 @@
 //  History
 //	
 /////////////////////////////////////////////////////////////////////////////
-//
-//    Copyright (C) 2023  Robert Heller D/B/A Deepwoods Software
-//			51 Locke Hill Road
-//			Wendell, MA 01379-9728
-//
-//    This program is free software; you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation; either version 2 of the License, or
-//    (at your option) any later version.
-//
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with this program; if not, write to the Free Software
-//    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-//
-// 
-//
-//////////////////////////////////////////////////////////////////////////////
+/** \copyright
+ * Copyright (c) 2023, Robert Heller
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are  permitted provided that the following conditions are met:
+ *
+ *  - Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
+ *  - Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *
+ * \file config.hxx
+ * 
+ * CDI Configuration for the LCC-PNET-Router firmware.
+ * 
+ * @author Robert Heller
+ * @date Thu Jan 12 14:23:01 2023
+ */
 
 #ifndef __CONFIG_HXX
 #define __CONFIG_HXX
@@ -48,6 +59,8 @@
 #include "openlcb/ConfigRepresentation.hxx"
 #include "openlcb/MemoryConfig.hxx"
 #include "PNETStack/include/ConfiguredPCPNetTrigger.hxx"
+#include "PNETStack/include/ConfiguredPCPNetControl.hxx"
+#include "PNETStack/include/ConfiguredPCPNetDimmer.hxx"
 
 #include "Hardware.hxx"
 #include "Revision.hxxout"
@@ -73,9 +86,13 @@ extern const SimpleNodeStaticValues SNIP_STATIC_DATA = {
     "linux.armv7a", "1.00"};
 
 #define NUM_TRIGGERS 32
+#define NUM_CONTROLS 32
+#define NUM_DIMMERS 32
 
 
 using AllTriggers = RepeatedGroup<PCPNetTriggerConfig, NUM_TRIGGERS>;
+using AllControls = RepeatedGroup<PCPNetControlConfig, NUM_CONTROLS>;
+using AllDimmers = RepeatedGroup<PCPNetDimmerConfig, NUM_DIMMERS>;
 
 /// Used for detecting when the config file stems from a different config.hxx
 /// version and needs to be factory reset before using. Change every time that
@@ -90,6 +107,10 @@ CDI_GROUP(IoBoardSegment, Name(HARDWARE_IMPL), Segment(MemoryConfigDefs::SPACE_C
 CDI_GROUP_ENTRY(internal_config, InternalConfigData);
 CDI_GROUP_ENTRY(triggers, AllTriggers, Name("PNET Triggers"), 
                 Description("PNET Triggers"), RepName("Trigger"));
+CDI_GROUP_ENTRY(controls, AllControls, Name("PNET Controls"),
+                Description("PNET Controls"), RepName("Control"));
+CDI_GROUP_ENTRY(dimmers, AllDimmers, Name("PNET Dimmers"),
+                Description("PNET Dimmers"), RepName("Dimmer"));
 CDI_GROUP_END();
 
 /// This segment is only needed temporarily until there is program code to set

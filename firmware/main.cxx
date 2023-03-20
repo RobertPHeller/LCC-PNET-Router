@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Thu Jan 12 14:03:18 2023
-//  Last Modified : <230320.0942>
+//  Last Modified : <230320.1449>
 //
 //  Description	
 //
@@ -48,20 +48,49 @@
  * Main file for the LCC-PNET-Router firmware.
  * 
  * @author Robert Heller
- * @date Sun Mar 19 12:14:28 2023
+ * @date Thu Jan 12 14:03:18 2023
  * 
  * @defgroup LCC-PNET-Router LCC PNET Router
  * 
  * @section SYNOPSIS SYNOPSIS
+ * 
+ * LCC-PNET-Router [-n nodeid] [-m mode] [-g host] [-c lcc_can_socketname] [-p pnet_can_socketname] [-e tEEPROM_file_path] 
+ * 
  * @section DESCRIPTION DESCRIPTION
+ * 
+ * Implements a "router" between LCC and PNET.  Sends selected PNET 
+ * messages (Trigger, Control, and Dimmer) in response to LCC events 
+ * and sends LCC event reports in response to selected PNET messages 
+ * (Trigger, Control, and Dimmer).
+ * 
  * @section OPTIONS OPTIONS
+ * 
+ * @arg -n nodeid The node id to use for the LCC node. The default is 
+ * @c 05:01:01:01:22:00
+ * @arg -m mode The LCC connection mode.  One of:
+ * - server start a GC hub
+ * - gcclient connect a GC hub. 
+ * - canclient connect a CAN Socket
+ * @arg -g host the GC hub server to connect to (-m gcclient).
+ * @arg -c lcc_can_socketname the CAN socket for LCC (-m canclient)
+ * @arg -p pnet_can_socketname
+ * @arg -e tEEPROM_file_path
+ * @par
+ * 
  * @section PARAMETERS PARAMETERS
+ * 
+ * None.
+ * 
  * @section FILES FILES
+ * 
+ * None.
+ * 
  * @section AUTHOR AUTHOR
  * @author Robert Heller
  * @date Sun Mar 19 12:16:13 2023
  * 
  * @mainpage Introduction
+ * (TBD)
  */
 
 
@@ -77,6 +106,8 @@ static const char rcsid[] = "@(#) : $Id$";
 #include "openlcb/ConfiguredProducer.hxx"
 #include "PNETStack.hxx"
 #include "ConfiguredPCPNetTrigger.hxx"
+#include "ConfiguredPCPNetControl.hxx"
+#include "ConfiguredPCPNetDimmer.hxx"
 
 #include "config.hxx"
 #include "utils/GpioInitializer.hxx"
@@ -147,6 +178,10 @@ public:
 
 
 
+enum LCCMode {SERVER, GCCLIENT, CANCLIENT};
+
+LCCMode lccmode = LCCMode::CANCLIENT;
+const char *lccgchost = "localhost";
 const char *lcccansocket = DEFAULT_LCCCAN_SOCKET;
 const char *pnetcansocket = DEFAULT_PNETCAN_SOCKET;
 
@@ -159,10 +194,21 @@ void usage(const char *e)
     fprintf(stderr, "LCC-PNET-Router.\n\n");
     fprintf(stderr, "\nOptions:\n");
     fprintf(stderr, "\t[-n nodeid]\n");
+    fprintf(stderr, "\t[-m mode]\n");
+    fprintf(stderr, "\t[-g host]\n");
     fprintf(stderr, "\t[-c lcc_can_socketname]\n");
     fprintf(stderr, "\t[-p pnet_can_socketname]\n"); 
-    fprintf(stderr, "\t-n nodeid is the node id, as a 12 hex digit number (optionally with colons between pairs of hex digits.\n");
-    fprintf(stderr, "\t-e EEPROM_file_path is the path to use to implement the EEProm device.\n");
+    fprintf(stderr, "\t[-e tEEPROM_file_path]\n");
+    fprintf(stderr, "Where:\n");
+    fprintf(stderr, "\tnodeid is the node id, as a 12 hex digit number (optionally with colons between pairs of hex digits.\n");
+    fprintf(stderr, "\tmode is the LCC connection mode.  One of:\n");
+    fprintf(stderr, "\t\tserver - start a GC hub (host 0.0.0.0, port = 12021)\n");
+    fprintf(stderr, "\t\tgcclient - connect a GC hub (at the host specificed by -h, port 12021)\n");
+    fprintf(stderr, "\t\tcanclient - connect a CAN Socket (-c) (default)\n");
+    fprintf(stderr, "\thost the GC hub server to connect to\n");
+    fprintf(stderr, "\tlcc_can_socketname the CAN socket for LCC\n");
+    fprintf(stderr, "\tpnet_can_socketname the CAN socket for PNET\n");
+    fprintf(stderr, "\tEEPROM_file_path is the path to use to implement the EEProm device.\n");
     exit(1);
 }
 
@@ -217,10 +263,11 @@ openlcb::NodeID parseNodeID(const char *nidstring)
     return (openlcb::NodeID) result;
 }
 
+
 void parse_args(int argc, char *argv[])
 {
     int opt;
-#define OPTSTRING "hn:e:p:c:"
+#define OPTSTRING "hn:e:p:c:m:g:"
     while ((opt = getopt(argc, argv, OPTSTRING)) >= 0)
     {
         switch (opt)
@@ -250,6 +297,28 @@ void parse_args(int argc, char *argv[])
         case 'p':
             pnetcansocket = optarg;
             break;
+        case 'g':
+            lccgchost = optarg;
+            break;
+        case 'm':
+            if (strncasecmp(optarg,"server",strlen(optarg)) == 0)
+            {
+                lccmode = LCCMode::SERVER;
+            }
+            else if (strncasecmp(optarg,"gcclient",strlen(optarg)) == 0)
+            {
+                lccmode = LCCMode::GCCLIENT;
+            }
+            else if (strncasecmp(optarg,"canclient",strlen(optarg)) == 0)
+            {
+                lccmode = LCCMode::CANCLIENT;
+            }
+            else
+            {
+                fprintf(stderr, "Unknown mode: %s\n",optarg);
+                usage(argv[0]);
+            }
+            break;
         default:
             fprintf(stderr, "Unknown option %c\n", opt);
             usage(argv[0]);
@@ -258,6 +327,8 @@ void parse_args(int argc, char *argv[])
 }
 
 TRIGGERS;
+CONTROLS;
+DIMMERS;
 
 /** Entry point to application.
  * @param argc number of command line arguments
@@ -286,6 +357,10 @@ int appl_main(int argc, char *argv[])
     
     PCPNetTrigger::Init(stack.node(), &pnet, cfg.seg().triggers(), 
                         NUM_TRIGGERS);
+    PCPNetControl::Init(stack.node(), &pnet, cfg.seg().controls(), 
+                        NUM_CONTROLS);
+    PCPNetDimmer::Init(stack.node(), &pnet, cfg.seg().dimmers(), 
+                        NUM_DIMMERS);
     
     // Create the config file
     stack.create_config_file_if_needed(cfg.seg().internal_config(), openlcb::CANONICAL_VERSION, openlcb::CONFIG_FILE_SIZE);
@@ -294,7 +369,17 @@ int appl_main(int argc, char *argv[])
     // Causes all packets to be dumped to stdout.
     stack.print_all_packets();
 #endif
-    stack.add_socketcan_port_select(lcccansocket);
+    switch (lccmode) {
+    case LCCMode::SERVER:
+        stack.start_tcp_hub_server(12021);
+        break;
+    case LCCMode::GCCLIENT:
+        stack.connect_tcp_gridconnect_hub(lccgchost,12021);
+        break;
+    case LCCMode::CANCLIENT:
+        stack.add_socketcan_port_select(lcccansocket);
+        break;
+    }
     pnet.add_socketcan_port_select(pnetcansocket);
     
     // This command donates the main thread to the operation of the
