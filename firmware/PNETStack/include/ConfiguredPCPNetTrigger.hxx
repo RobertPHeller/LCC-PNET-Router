@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Sun Mar 19 14:31:22 2023
-//  Last Modified : <230320.1102>
+//  Last Modified : <230320.1236>
 //
 //  Description	
 //
@@ -94,11 +94,11 @@ public:
           , slot_(0)
           , trigger_(1)
     {
-        register_trigger_handler();
+        if (enabled_) register_trigger_handler();
     }
     ~PCPNetTrigger()
     {
-        unregister_trigger_handler();
+        if (enabled_) unregister_trigger_handler();
     }
     UpdateAction apply_configuration(int fd, 
                                      bool initial_load, 
