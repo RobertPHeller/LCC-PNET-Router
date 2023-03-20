@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Sun Mar 19 14:31:22 2023
-//  Last Modified : <230319.1636>
+//  Last Modified : <230320.1024>
 //
 //  Description	
 //
@@ -131,32 +131,84 @@ public:
                                 openlcb::EventReport *event, 
                                 BarrierNotifiable *done) override
     {
+        if (event->dst_node && event->dst_node != node_)
+        {
+            return done->notify();
+        }
+        event->event_write_helper<1>()->WriteAsync(node_,
+                                                   openlcb::Defs::MTI_PRODUCER_IDENTIFIED_UNKNOWN,
+                                                   openlcb::WriteHelper::global(),
+                                                   openlcb::eventid_to_buffer(event_produced_), done->new_child());
+        event->event_write_helper<2>()->WriteAsync(node_,
+                                                   openlcb::Defs::MTI_CONSUMER_IDENTIFIED_UNKNOWN,
+                                                   openlcb::WriteHelper::global(),
+                                                   openlcb::eventid_to_buffer(event_consumed_), done->new_child());
+        done->maybe_done();
     }
     void handle_identify_producer(const openlcb::EventRegistryEntry &registry_entry, 
                                   openlcb::EventReport *event, 
                                   BarrierNotifiable *done) override
     {
+        if (event->dst_node && event->dst_node != node_)
+        {
+            return done->notify();
+        }
+        event->event_write_helper<3>()->WriteAsync(node_,
+                                                   openlcb::Defs::MTI_PRODUCER_IDENTIFIED_UNKNOWN,
+                                                   openlcb::WriteHelper::global(),
+                                                   openlcb::eventid_to_buffer(event_produced_), done->new_child());
+        done->maybe_done();
     }
     void handle_identify_consumer(const openlcb::EventRegistryEntry &registry_entry, 
                                   openlcb::EventReport *event, 
                                   BarrierNotifiable *done) override
     {
+        if (event->dst_node && event->dst_node != node_)
+        {
+            return done->notify();
+        }
+        event->event_write_helper<4>()->WriteAsync(node_,
+                                                   openlcb::Defs::MTI_CONSUMER_IDENTIFIED_UNKNOWN,
+                                                   openlcb::WriteHelper::global(),
+                                                   openlcb::eventid_to_buffer(event_consumed_), done->new_child());
+        done->maybe_done();
     }
     void handle_event_report(const openlcb::EventRegistryEntry &registry_entry, 
                              openlcb::EventReport *event, 
                              BarrierNotifiable *done) override
     {
+        if (event->event == event_consumed_)
+        {
+            pnet::TriggerData td(slot_, trigger_);
+            pnet::GenMessage m;
+            td.FillMessage(&m);
+            trigger_message_helper.WriteAsync(pnetstack_,
+                                              m.identifier,
+                                              m.payload,
+                                              done);
+        }
+        else
+        {
+            done->notify();
+        }
     }
     void process_trigger(const pnet::TriggerData &td,
                          BarrierNotifiable *done)
     {
+        trigger_event_helper.WriteAsync(node_,openlcb::Defs::MTI_EVENT_REPORT,
+                                        openlcb::WriteHelper::global(),
+                                        openlcb::eventid_to_buffer(event_produced_),
+                                        done);
     }
 private:
     void register_event_handler()
     {
+        openlcb::EventRegistry::instance()->register_handler(openlcb::EventRegistryEntry(this,event_consumed_), 0);
+        openlcb::EventRegistry::instance()->register_handler(openlcb::EventRegistryEntry(this,event_produced_), 0);
     }
     void unregister_event_handler()
     {
+        openlcb::EventRegistry::instance()->unregister_handler(this);
     }
     void register_trigger_handler()
     {
@@ -175,7 +227,26 @@ private:
     uint8_t trigger_;
     openlcb::WriteHelper trigger_event_helper;
     pnet::WriteHelper trigger_message_helper;
+    static vector<PCPNetTrigger *> triggers;
+public:
+    template <unsigned N>
+          __attribute__((noinline))
+          static void Init(openlcb::Node *node, 
+                           pnet::PNETCanStack *pnetstack,
+                           const openlcb::RepeatedGroup<PCPNetTriggerConfig, N> &config,
+                           unsigned size)
+    {
+        HASSERT(size == N);
+        openlcb::ConfigReference offset_(config);
+        openlcb::RepeatedGroup<PCPNetTriggerConfig, UINT_MAX> grp_ref(offset_.offset());
+        for (unsigned i = 0; i < size; i++)
+        {
+            triggers.push_back(new PCPNetTrigger(node,pnetstack,grp_ref.entry(i)));
+        }
+    }
 };
+
+#define TRIGGERS vector<PCPNetTrigger *> PCPNetTrigger::triggers
 
 #endif // __CONFIGUREDPCPNETTRIGGER_HXX
 

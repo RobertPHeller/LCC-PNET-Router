@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Thu Jan 12 14:03:18 2023
-//  Last Modified : <230319.1223>
+//  Last Modified : <230320.0942>
 //
 //  Description	
 //
@@ -76,6 +76,7 @@ static const char rcsid[] = "@(#) : $Id$";
 #include "openlcb/ConfiguredConsumer.hxx"
 #include "openlcb/ConfiguredProducer.hxx"
 #include "PNETStack.hxx"
+#include "ConfiguredPCPNetTrigger.hxx"
 
 #include "config.hxx"
 #include "utils/GpioInitializer.hxx"
@@ -256,6 +257,7 @@ void parse_args(int argc, char *argv[])
     }
 }
 
+TRIGGERS;
 
 /** Entry point to application.
  * @param argc number of command line arguments
@@ -281,6 +283,9 @@ int appl_main(int argc, char *argv[])
     pnet::PNETCanStack pnet(stack.executor());
     
     FactoryResetHelper  factory_reset_helper;
+    
+    PCPNetTrigger::Init(stack.node(), &pnet, cfg.seg().triggers(), 
+                        NUM_TRIGGERS);
     
     // Create the config file
     stack.create_config_file_if_needed(cfg.seg().internal_config(), openlcb::CANONICAL_VERSION, openlcb::CONFIG_FILE_SIZE);
