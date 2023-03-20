@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Thu Jan 12 14:24:13 2023
-//  Last Modified : <230112.1430>
+//  Last Modified : <230320.1132>
 //
 //  Description	
 //
@@ -46,7 +46,7 @@
 #define DEFAULT_LCCCAN_SOCKET "can0"
 #define DEFAULT_PNETCAN_SOCKET "can1"
 
-#define HARDWARE_IMPL "PocketBeagle LCC<=>PNET"
+#define HARDWARE_IMPL "LCC-PNET-Router"
 
 #endif // __HARDWARE_HXX
 
