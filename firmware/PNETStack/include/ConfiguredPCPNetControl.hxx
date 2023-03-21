@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Mon Mar 20 12:18:05 2023
-//  Last Modified : <230320.1617>
+//  Last Modified : <230321.1233>
 //
 //  Description	
 //
@@ -46,6 +46,17 @@
  * \file ConfiguredPCPNetControl.hxx
  * 
  * Configured Producer/Consumer for PNET Control messages.
+ *
+ *  <b>Configuration Options</b>
+ * 
+ * - Description (16 char string) User name of this Control.
+ * - Event Produced (Event ID) (P) This event is produced when a matching Control message is received.
+ * - Event Consumed (Event ID) (C) This event will cause the defined Control to be sent.
+ * - Enable (Yes/No) Enable this Control.
+ * - Slot (0-31) The Control slot number (0-31).
+ * - Control Number (0-255) The control number.
+ * - Attributes (0-255) The control attributes.
+ * 
  * 
  * @author Robert Heller
  * @date Mon Mar 20 12:18:05 2023
@@ -69,7 +80,7 @@ CDI_GROUP(PCPNetControlConfig);
 /// Allows the user to assign a name for this PCPNetControl.
 CDI_GROUP_ENTRY(description, openlcb::StringConfigEntry<16>, //
                 Name("Description"), 
-                Description("User name of this Control."))
+                Description("User name of this Control."));
 /// Event produced (sent) when a PNet Control message is received on the PNet.
 CDI_GROUP_ENTRY(event_produced, openlcb::EventConfigEntry,
                 Name("Event Produced"),
@@ -286,13 +297,13 @@ public:
                                         done);
     }
 private:
-    /// Register a event handlers.
+    /// Register event handlers.
     void register_event_handler()
     {
         openlcb::EventRegistry::instance()->register_handler(openlcb::EventRegistryEntry(this,event_consumed_), 0);
         openlcb::EventRegistry::instance()->register_handler(openlcb::EventRegistryEntry(this,event_produced_), 0);
     }
-    /// Unregister a event handlers.
+    /// Unregister event handlers.
     void unregister_event_handler()
     {
         openlcb::EventRegistry::instance()->unregister_handler(this);
