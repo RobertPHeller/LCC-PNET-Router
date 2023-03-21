@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Wed Mar 15 13:51:40 2023
-#  Last Modified : <230320.1606>
+#  Last Modified : <230320.2019>
 #
 #  Description	
 #
@@ -45,6 +45,7 @@
 
 SRCS =  ../main.cxx $(wildcard ../*.hxx) \
 	$(wildcard ../PNETStack/include/*.hxx) \
+	$(wildcard ../PNETStack/*.cxx) \
 	$(wildcard ../targets/*/*.hxx)
 	
 all: docs
