@@ -7,5 +7,6 @@
   (lib (name USB-A-Upright)(type KiCad)(uri "$(KIPRJMOD)/CustomFootprints/USB-A-Upright.pretty")(options "")(descr ""))
   (lib (name DWSLogoBCU)(type Legacy)(uri "$(KIPRJMOD)/CustomFootprints/DWSLogoBCU.mod")(options "")(descr ""))
   (lib (name SOIC_Wide)(type KiCad)(uri "$(KIPRJMOD)/CustomFootprints/SOIC_Wide.pretty")(options "")(descr ""))
+  (lib (name RJ12Molex)(type KiCad)(uri "$(KIPRJMOD)/CustomFootprints/RJ12Molex.pretty")(options "")(descr ""))
   (lib (name SRN1060)(type Legacy)(uri "$(KIPRJMOD)/CustomFootprints/SRN1060.mod")(options "")(descr ""))
 )
