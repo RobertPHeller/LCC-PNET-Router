@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Wed Mar 15 13:51:40 2023
-#  Last Modified : <230320.2019>
+#  Last Modified : <230322.1105>
 #
 #  Description	
 #
@@ -46,7 +46,13 @@
 SRCS =  ../main.cxx $(wildcard ../*.hxx) \
 	$(wildcard ../PNETStack/include/*.hxx) \
 	$(wildcard ../PNETStack/*.cxx) \
-	$(wildcard ../targets/*/*.hxx)
+	$(wildcard ../targets/*/*.hxx) \
+	Revision.h
+	
+Revision.h: ../targets/pb.linux.armv7a/Revision.hxxout
+	echo '/** @page Revision Build Revisions' > $@
+	grep '^[[:space:]]*"[^"]*",$$' $< |sed 's/^[[:space:]]*"/ * - /g'|sed 's/",$$//g' >> $@
+	echo '*/' >> $@
 	
 all: docs
 
