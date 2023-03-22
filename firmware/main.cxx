@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Thu Jan 12 14:03:18 2023
-//  Last Modified : <230320.1449>
+//  Last Modified : <230322.1019>
 //
 //  Description	
 //
@@ -54,7 +54,7 @@
  * 
  * @section SYNOPSIS SYNOPSIS
  * 
- * LCC-PNET-Router [-n nodeid] [-m mode] [-g host] [-c lcc_can_socketname] [-p pnet_can_socketname] [-e tEEPROM_file_path] 
+ * LCC-PNET-Router [-n nodeid] [-m mode] [-g host] [-c lcc_can_socketname] [-p pnet_can_socketname] [-e EEPROM_file_path] 
  * 
  * @section DESCRIPTION DESCRIPTION
  * 
@@ -74,7 +74,7 @@
  * @arg -g host the GC hub server to connect to (-m gcclient).
  * @arg -c lcc_can_socketname the CAN socket for LCC (-m canclient)
  * @arg -p pnet_can_socketname
- * @arg -e tEEPROM_file_path
+ * @arg -e EEPROM_file_path
  * @par
  * 
  * @section PARAMETERS PARAMETERS
@@ -90,7 +90,24 @@
  * @date Sun Mar 19 12:16:13 2023
  * 
  * @mainpage Introduction
- * (TBD)
+ * 
+ * This is an implementation of a "router" between the LCC network and
+ * the PNET network.  LCC event reports are translated to PNET messages
+ * (Control, Trigger, and Dimmer) and PNET messages (Control, Trigger, 
+ * and Dimmer) are translated to LCC events reports.  This allows LCC
+ * sensors, etc. to control PNET devices and allows PNET devices to
+ * send LCC events to LCC nodes.
+ * 
+ * This firmware implements 32 each of matching Control, Trigger, and 
+ * Dimmer messages.  These numbers can be changed in the config.hxx 
+ * file to allow more (or less) matching messages to be implemented.
+ * 
+ * This firmware is expected to run on a Linux SBC with at least one
+ * CAN IF, preferably two CAN IFs.  This includes the BeagleBone and
+ * PocketBeagle, but the code should run on any other Linux SBC that
+ * has least one CAN IF  -- this would include a Raspberry (or 
+ * other flavors) Pi with a Seeed systems CAN Hat.
+ * 
  */
 
 
@@ -198,7 +215,7 @@ void usage(const char *e)
     fprintf(stderr, "\t[-g host]\n");
     fprintf(stderr, "\t[-c lcc_can_socketname]\n");
     fprintf(stderr, "\t[-p pnet_can_socketname]\n"); 
-    fprintf(stderr, "\t[-e tEEPROM_file_path]\n");
+    fprintf(stderr, "\t[-e EEPROM_file_path]\n");
     fprintf(stderr, "Where:\n");
     fprintf(stderr, "\tnodeid is the node id, as a 12 hex digit number (optionally with colons between pairs of hex digits.\n");
     fprintf(stderr, "\tmode is the LCC connection mode.  One of:\n");
