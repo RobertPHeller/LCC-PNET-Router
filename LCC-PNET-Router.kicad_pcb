@@ -63,7 +63,7 @@
     (aux_axis_origin 0 0)
     (visible_elements FFFFFFBF)
     (pcbplotparams
-      (layerselection 0x00030_80000001)
+      (layerselection 0x29fff_80000001)
       (usegerberextensions true)
       (excludeedgelayer true)
       (linewidth 0.150000)
@@ -84,9 +84,9 @@
       (subtractmaskfromsilk false)
       (outputformat 1)
       (mirror false)
-      (drillshape 1)
+      (drillshape 0)
       (scaleselection 1)
-      (outputdirectory ""))
+      (outputdirectory Gerber/))
   )
 
   (net 0 "")
@@ -2177,6 +2177,7 @@
 
   (module DWSLogoBCU:DWSLogoBCU (layer F.Cu) (tedit 0) (tstamp 641B4CE4)
     (at 163.068 82.804 90)
+    (attr smd)
     (fp_text reference "" (at 0 0 90) (layer F.SilkS)
       (effects (font (thickness 0.15)))
     )
@@ -2243,6 +2244,7 @@
 
   (module LCC_LOGO:LCC_LOGO_9x9 (layer F.Cu) (tedit 0) (tstamp 641B4EF0)
     (at 114.3 72.644)
+    (attr smd)
     (fp_text reference G*** (at 0 0) (layer F.SilkS) hide
       (effects (font (thickness 0.3)))
     )
@@ -2419,6 +2421,7 @@
 
   (module PowerLabels:PowerLabel-250 (layer F.Cu) (tedit 630E06DA) (tstamp 641B4FC1)
     (at 122.936 71.882)
+    (attr smd)
     (fp_text reference REF** (at 3.175 7.239) (layer F.SilkS) hide
       (effects (font (size 1 1) (thickness 0.15)))
     )

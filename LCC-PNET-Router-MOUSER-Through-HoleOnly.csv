@@ -1,0 +1,6 @@
+"Item","Qty","Reference(s)","Value","LibPart","Footprint","Datasheet","Mouser Part Number"
+"1","1","J101","USB_A","conn:USB_A","USB-A-Upright:USB-A-UPRIGHT","","710-614004184726"
+"2","2","J202, J203","RJ45","conn:RJ45","RJ45-8N-S:RJ45_8N-S","","710-615008144221"
+"3","2","J302, J303","PNET","conn:RJ12","RJ12Molex:95501-2661","","538-95501-2661 "
+"4","2","P1, P2","POCKETBEAGLE-P2","pocketbeagle:POCKETBEAGLE-P2","Socket_Strips:Socket_Strip_Straight_2x18_Pitch2.54mm","","517-929975-01-18-RK"
+"5","1","","Pin Headers",,"Socket_Strips:Pin_Strip_Straight_2x40_Pitch2.54mm","","710-61308021121"
