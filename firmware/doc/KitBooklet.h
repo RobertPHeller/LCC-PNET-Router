@@ -8,7 +8,7 @@
  *  Author        : $Author$
  *  Created By    : Robert Heller
  *  Created       : Thr Mar 30 10:49:54 2023
- *  Last Modified : <230330.1055>
+ *  Last Modified : <230330.1658>
  *
  *  Description	
  *
@@ -47,7 +47,36 @@
  *  @date Thr Mar 30 10:49:54 2023
  * 
  * @page assembly Assembly
+ * 
+ * Assembly is straight forward.  The SMD parts are already soldered,
+ * so only the through hole part need to be soldered to the board. 
+ * Start with the shortese parts and work towards the tallest.  The
+ * pin headers are in the form of a single 2x40 "break away" header.
+ * This header can be cut with a pair of wire cutters.  You will need
+ * two 2x2 and two 2x18 headers.  The two 2x2 headers are for the 
+ * termination headers and the two 2x18 headers will go in the Pocket
+ * Beagle.  Also be sure to face the wire openings of the screw 
+ * terminals out from the board.
+ * 
+ * @image html LCC-PNET-ROUTER-3D.png
+ * @image latex LCC-PNET-ROUTER-3D.png "3D top view of the PCB"
+ * 
  * @page download Downloadables and Software Support
+ * 
+ * The included microSD card contains the code under  
+ * @c /opt/LCC-PNET-Router.  The image also has the necessary boot
+ * overlays and such set up to enable and start both CAN IFs.  As
+ * shipped, the router firmware is not started, since local 
+ * configuration is required.
+ */ 
+/* More documentation needed: 
+   https://linuxhandbook.com/create-systemd-services/.
+ */
+/**
+ * 
  * @page wiring General Wiring Notes
+ * @section termination Termination of the networks.
+ * @section connecting Connecting the networks,
+ * @section usbhost USB Host connector.
  * 
  ****************************************************************************/
