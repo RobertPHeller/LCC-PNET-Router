@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Wed Mar 15 13:51:40 2023
-#  Last Modified : <230322.1105>
+#  Last Modified : <230330.1046>
 #
 #  Description	
 #
@@ -47,7 +47,7 @@ SRCS =  ../main.cxx $(wildcard ../*.hxx) \
 	$(wildcard ../PNETStack/include/*.hxx) \
 	$(wildcard ../PNETStack/*.cxx) \
 	$(wildcard ../targets/*/*.hxx) \
-	Revision.h
+	Revision.h KitBooklet.h
 	
 Revision.h: ../targets/pb.linux.armv7a/Revision.hxxout
 	echo '/** @page Revision Build Revisions' > $@
