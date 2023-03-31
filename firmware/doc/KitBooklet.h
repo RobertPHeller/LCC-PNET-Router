@@ -8,7 +8,7 @@
  *  Author        : $Author$
  *  Created By    : Robert Heller
  *  Created       : Thr Mar 30 10:49:54 2023
- *  Last Modified : <230331.1136>
+ *  Last Modified : <230331.1600>
  *
  *  Description	
  *
@@ -82,7 +82,9 @@
  * networks like any other board or node on the respective networks.
  * 
  * There are terminals for LCC network power input and power output
- * available.
+ * available. The router is powered from the LCC network power bus,
+ * which can be the local power input terminals or from a power input
+ * somewhere else on the LCC network.
  * 
  * @section usbhost USB Host connector.
  * 
@@ -94,33 +96,68 @@
  * @page download Downloadables and Software Support
  * 
  * @section initialsetup Initial Setup
- * The included microSD card contains the code under  
- * @c /opt/LCC-PNET-Router.  The image also has the necessary boot
- * overlays and such set up to enable and start both CAN IFs.  As
- * shipped, the router firmware is not started, since local 
- * configuration is required.
+ * The included microSD card is based on a Beagle Bone 10.3 iot image
+ * and has LCC-PNET-Router, OpenMRN, and the rest of the packages
+ * and utilities needed tp rebuild the firmware.  The firmware has
+ * been built and installed under @c /opt/LCC-PNET-Router/sbin and
+ * a systemd system file has been installed under 
+ * @c /etc/systemd/system (but not been enabled).  The 
+ * @c /boot/uEnv.txt and @c /etc/network/interfaces files have been
+ * edited to bring up both CAN IFs (@c can0 and @c can1).  Things are
+ * mostly ready.  There are some local configuration that must be done
+ * to makes this properly ready.
+ *
+ * The default login for the Beagle Bone 10.3 iot image is
  * 
- * Before starting the router, you should look at the file 
- * @c /etc/defaults/lccpnetrouter and edit it as needed.  The two 
- * things that @i need editing are the NID (get a unique id range
- * here https://registry.openlcb.org/requestuniqueidrange) and possibly
- * the EEPROM configuration pathname.  Once this is done, you can 
- * enable the service (this will cause the router to be started when
- * the PocketBeagle starts):
+ * - Username: debian
+ * - Password: temppwd
+ * 
+ * With the included microSD card inserted in the PocketBeagle and a
+ * USB cable connected between a desktop or laptop computer and the 
+ * PocketBeagle, there should be a network connection set up:
+ * 
+ * | IP        Address  | Conn. Type | Operating System(s) |
+ * | :----------------- | :--------- | :------------------ |
+ * | 192.168.7.2        | USB        | Windows             |
+ * | 192.168.6.2        | USB        | Mac OS X, Linux     |
+ * 
+ * You should be able to use a ssh client (Putty under MS-Windows, 
+ * native slogin in a terminal window under Mac OS X and Linux) to 
+ * connect:
+ * 
+ * @code
+ * slogin debian@192.168.6.2
+ * debian password:
+ * @endcode
+ * 
+ * The password is @c temppwd.
+ * 
+ * Once logged in, you will want to edit the configuration file:
+ * @c /etc/defaults/lccpnetrouter.  The important thing to edit is
+ * the NID.  You can get a unique id range here:
+ * https://registry.openlcb.org/requestuniqueidrange - you should not
+ * use the default in the file, it is only there as a placeholder.
+ * Once you have finished editing the file, you can enable the 
+ * router to start at boot time automatically:
  * 
  * @code
  * sudo systemctl enable lccpnetrouter
  * @endcode
  * 
- * And then start it (first time only):
+ * At this point you can safely shutdown the PocketBeagle with the
+ * command:
  * 
  * @code
- * sudo systemctl start lccpnetrouter
+ * sudo /sbin/poweroff
  * @endcode
  * 
- * At this point the router should show up on your LCC network and
- * be visible and available for configuring with a CDI configuration
- * tool (such as JMRI).
+ * Once all of the LEDs go off, you can disconnect the PocketBeagle
+ * from the laptop or desktop computer and plug it into the router
+ * board.  Be sure to orient it properly -- the end with the USB 
+ * connector should be towards to LCC connectors, as indicated on the
+ * board. You can now connect it to the networks and power the networks
+ * up.  Once the PocketBeagle boots up, the router will be up and ready
+ * to be configured with a CDI configuration tool (such as JMRI).
  *
  * @section configuration Configuring the Router
  * 
