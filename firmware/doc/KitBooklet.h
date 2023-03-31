@@ -8,7 +8,7 @@
  *  Author        : $Author$
  *  Created By    : Robert Heller
  *  Created       : Thr Mar 30 10:49:54 2023
- *  Last Modified : <230330.1658>
+ *  Last Modified : <230331.1136>
  *
  *  Description	
  *
@@ -61,22 +61,83 @@
  * @image html LCC-PNET-ROUTER-3D.png
  * @image latex LCC-PNET-ROUTER-3D.png "3D top view of the PCB"
  * 
+ * 
+ * 
+ * @page wiring General Wiring Notes
+ * @section termination Termination of the networks.
+ * 
+ * Each of the two CAN networks includes a termination jumper block.
+ * Termination works the same for both.  You have a choise of no 
+ * termination, simple termination, and center tapped termination,
+ * as shown here:
+ * 
+ * @image html TerminationJumpers.png
+ * @image latex  TerminationJumpers.png "Termination Jumpers" width=3in
+ * 
+ * @section connecting Connecting the networks,
+ * 
+ * There are two RJ45 connectors for the LCC network and two RJ12 6-6 
+ * connectors for the PNET network.  Connecting to each of these 
+ * networks is straight forward and this board connects to the two
+ * networks like any other board or node on the respective networks.
+ * 
+ * There are terminals for LCC network power input and power output
+ * available.
+ * 
+ * @section usbhost USB Host connector.
+ * 
+ * The USB-A connector is a USB Host connection.  Any standard USB 2.0
+ * device could be connected, but main use would be for a USB to 
+ * Ethernet or WiFi is the primary intent.  Be sure to check for driver
+ * support.
+ * 
  * @page download Downloadables and Software Support
  * 
+ * @section initialsetup Initial Setup
  * The included microSD card contains the code under  
  * @c /opt/LCC-PNET-Router.  The image also has the necessary boot
  * overlays and such set up to enable and start both CAN IFs.  As
  * shipped, the router firmware is not started, since local 
  * configuration is required.
- */ 
-/* More documentation needed: 
-   https://linuxhandbook.com/create-systemd-services/.
- */
-/**
  * 
- * @page wiring General Wiring Notes
- * @section termination Termination of the networks.
- * @section connecting Connecting the networks,
- * @section usbhost USB Host connector.
+ * Before starting the router, you should look at the file 
+ * @c /etc/defaults/lccpnetrouter and edit it as needed.  The two 
+ * things that @i need editing are the NID (get a unique id range
+ * here https://registry.openlcb.org/requestuniqueidrange) and possibly
+ * the EEPROM configuration pathname.  Once this is done, you can 
+ * enable the service (this will cause the router to be started when
+ * the PocketBeagle starts):
+ * 
+ * @code
+ * sudo systemctl enable lccpnetrouter
+ * @endcode
+ * 
+ * And then start it (first time only):
+ * 
+ * @code
+ * sudo systemctl start lccpnetrouter
+ * @endcode
+ * 
+ * At this point the router should show up on your LCC network and
+ * be visible and available for configuring with a CDI configuration
+ * tool (such as JMRI).
+ *
+ * @section configuration Configuring the Router
+ * 
+ * The router has three configuration tabs, each with 32 instances:
+ * 
+ * -# PNET Triggers
+ * -# PNET Controls
+ * -# PNET Dimmers
+ * 
+ * They are all very similar.  For each instance there is a name, an
+ * enable flag, two events, and a set of instance specific parameters.
+ * 
+ * One of the events will be produced when a matching PNET message is
+ * received and the other event will be consumed and will cause a
+ * PNET message to be sent.
+ * 
+ * There are 32 of each of these message types as the code is shipped.
+ * 
  * 
  ****************************************************************************/

@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Wed Mar 15 13:51:40 2023
-#  Last Modified : <230330.1046>
+#  Last Modified : <230331.1121>
 #
 #  Description	
 #
@@ -43,6 +43,8 @@
 ##############################################################################
 
 
+all: docs
+
 SRCS =  ../main.cxx $(wildcard ../*.hxx) \
 	$(wildcard ../PNETStack/include/*.hxx) \
 	$(wildcard ../PNETStack/*.cxx) \
@@ -54,8 +56,6 @@ Revision.h: ../targets/pb.linux.armv7a/Revision.hxxout
 	grep '^[[:space:]]*"[^"]*",$$' $< |sed 's/^[[:space:]]*"/ * - /g'|sed 's/",$$//g' >> $@
 	echo '*/' >> $@
 	
-all: docs
-
 .PHONY:
 docs: html pdf man
 
