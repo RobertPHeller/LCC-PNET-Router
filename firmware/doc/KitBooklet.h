@@ -8,7 +8,7 @@
  *  Author        : $Author$
  *  Created By    : Robert Heller
  *  Created       : Thr Mar 30 10:49:54 2023
- *  Last Modified : <230331.1600>
+ *  Last Modified : <230402.1216>
  *
  *  Description	
  *
@@ -50,7 +50,7 @@
  * 
  * Assembly is straight forward.  The SMD parts are already soldered,
  * so only the through hole part need to be soldered to the board. 
- * Start with the shortese parts and work towards the tallest.  The
+ * Start with the shortest parts and work towards the tallest.  The
  * pin headers are in the form of a single 2x40 "break away" header.
  * This header can be cut with a pair of wire cutters.  You will need
  * two 2x2 and two 2x18 headers.  The two 2x2 headers are for the 
@@ -98,7 +98,7 @@
  * @section initialsetup Initial Setup
  * The included microSD card is based on a Beagle Bone 10.3 iot image
  * and has LCC-PNET-Router, OpenMRN, and the rest of the packages
- * and utilities needed tp rebuild the firmware.  The firmware has
+ * and utilities needed to rebuild the firmware.  The firmware has
  * been built and installed under @c /opt/LCC-PNET-Router/sbin and
  * a systemd system file has been installed under 
  * @c /etc/systemd/system (but not been enabled).  The 
