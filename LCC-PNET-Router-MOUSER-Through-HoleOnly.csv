@@ -4,3 +4,4 @@
 "3","2","J302, J303","PNET","conn:RJ12","RJ12Molex:95501-2661","","538-95501-2661 "
 "4","2","P1, P2","POCKETBEAGLE-P2","pocketbeagle:POCKETBEAGLE-P2","Socket_Strips:Socket_Strip_Straight_2x18_Pitch2.54mm","","517-929975-01-18-RK"
 "5","1","","Pin Headers",,"Socket_Strips:Pin_Strip_Straight_2x40_Pitch2.54mm","","710-61308021121"
+"6","2","T201, T202","LCC Power In/Out","conn:Screw_Terminal_01x02","Connectors_Terminal_Blocks:TerminalBlock_Pheonix_MPT-2.54mm_2pol","","651-1703144"
