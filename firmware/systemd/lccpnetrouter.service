@@ -1,0 +1,13 @@
+[Unit]
+Description=LCC / PNET Router
+After=network.target
+
+[Service]
+User=debian
+Group=debian
+EnvironmentFile=-/etc/default/lccpnetrouter
+ExecStart=/opt/LCC-PNET-ROUTER/sbin/LCC-PNET-ROUTER $LCCPNETROUTER_OPTS
+
+[Install]
+WantedBy=multi-user.target
+

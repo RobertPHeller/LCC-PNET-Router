@@ -1,0 +1,30 @@
+# Default settings for lccpnetrouter. This file is sourced by systemd
+#
+# Options to pass to LCC-PNET-ROUTER
+#
+# Options:
+# -n nodeid The NID to use.  Should be unique.
+# (get a node id prefix from https://registry.openlcb.org/requestuniqueidrange)
+# -m mode
+#    LCC connection mode, this can be:
+#    canclient (LCC on CAN), 
+#    server (start GC Hub on port 12021),
+#    gcclient (connect to a GC Hub specified by -g)
+# -g host The LCC GC Hub host to connect to when -m is gcclient
+# -c candevname The LCC CAN socket to connect to when -m is canclient
+# -p candevname The PNET CAN socket to connect to
+# -e pathname The path to the (persistant) EEPROM configuration.
+#
+# defaults below:
+# NID 05:01:01:01:22:00 (CHANGE THIS!!!)
+# LCC mode: CAN
+# LCC CAN Socket can0
+# PNET CAN Socket can1
+# EEPROM file: /opt/LCC-PNET-ROUTER/EEPROM_050101012200
+#
+LCCPNETROUTER_OPTS= \
+ -n 05:01:01:01:22:00 \
+ -m canclient \
+ -c can0 \
+ -p can1 \
+ -e /opt/LCC-PNET-ROUTER/EEPROM_050101012200
