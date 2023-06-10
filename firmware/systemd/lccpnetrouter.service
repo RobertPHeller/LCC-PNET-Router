@@ -6,7 +6,7 @@ After=network.target
 User=debian
 Group=debian
 EnvironmentFile=-/etc/default/lccpnetrouter
-ExecStart=/opt/LCC-PNET-ROUTER/sbin/LCC-PNET-ROUTER $LCCPNETROUTER_OPTS
+ExecStart=/opt/LCC-PNET-Router/sbin/LCC-PNET-Router $LCCPNETROUTER_OPTS
 
 [Install]
 WantedBy=multi-user.target
