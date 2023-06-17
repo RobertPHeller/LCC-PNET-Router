@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Mon Mar 20 12:18:05 2023
-//  Last Modified : <230321.1233>
+//  Last Modified : <230617.1041>
 //
 //  Description	
 //
@@ -53,9 +53,9 @@
  * - Event Produced (Event ID) (P) This event is produced when a matching Control message is received.
  * - Event Consumed (Event ID) (C) This event will cause the defined Control to be sent.
  * - Enable (Yes/No) Enable this Control.
- * - Slot (0-31) The Control slot number (0-31).
+ * - Slot (0-63) The Control slot number (0-63).
  * - Control Number (0-255) The control number.
- * - Attributes (0-255) The control attributes.
+ * - Attributes (0-255) The control attributes (0=off, 0xFF=on, 50=pulse (500ms)).
  * 
  * 
  * @author Robert Heller
@@ -97,9 +97,9 @@ CDI_GROUP_ENTRY(enabled, openlcb::Uint8ConfigEntry,
                 Name("Enable"), Description("Enable this Control."));
 /// The Slot value.
 CDI_GROUP_ENTRY(slot, openlcb::Uint8ConfigEntry,
-                Min(0), Max(31), Default(0),
+                Min(0), Max(63), Default(0),
                 Name("Slot"),
-                Description("The Control slot number (0-31)."));
+                Description("The Control slot number (0-63)."));
 /// The control number.
 CDI_GROUP_ENTRY(value, openlcb::Uint8ConfigEntry,
                 Default(0),
@@ -109,7 +109,7 @@ CDI_GROUP_ENTRY(value, openlcb::Uint8ConfigEntry,
 CDI_GROUP_ENTRY(attributes, openlcb::Uint8ConfigEntry,
                 Default(0),
                 Name("Attributes"),
-                Description("The control attributes."));
+                Description("The control attributes (0=off, 0xFF=on, 50=pulse (500ms))."));
 CDI_GROUP_END();
 
 /// OpenLCB Producer/Consumer class integrating a PNET Control message

@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Mon Mar 20 12:19:01 2023
-//  Last Modified : <230321.1232>
+//  Last Modified : <230617.1040>
 //
 //  Description	
 //
@@ -53,7 +53,7 @@
  * - Event Produced (Event ID) (P) This event is produced when a matching Control message is received.
  * - Event Consumed (Event ID) (C) This event will cause the defined Control to be sent.
  * - Enable (Yes/No) Enable this Dimmer.
- * - Slot (0-31) The Control slot number (0-31).
+ * - Slot (0-63) The Control slot number (0-63).
  * - Value A (0-255) Dimmer value A.
  * - Value B (0-255) Dimmer value B.
  * - Value C (0-255) Dimmer value C.
@@ -97,9 +97,9 @@ CDI_GROUP_ENTRY(enabled, openlcb::Uint8ConfigEntry,
                 Name("Enable"), Description("Enable this dimmer."));
 /// The Slot value.
 CDI_GROUP_ENTRY(slot, openlcb::Uint8ConfigEntry,
-                Min(0), Max(31), Default(0),
+                Min(0), Max(63), Default(0),
                 Name("Slot"),
-                Description("The dimmer slot number (0-31)."));
+                Description("The dimmer slot number (0-63)."));
 /// Dimmer value a.
 CDI_GROUP_ENTRY(value_a, openlcb::Uint8ConfigEntry,
                 Default(0),
