@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Wed Mar 15 13:51:40 2023
-#  Last Modified : <230331.1121>
+#  Last Modified : <230702.0955>
 #
 #  Description	
 #
@@ -69,6 +69,15 @@ pdf: latex
 	$(MAKE) -C latex
 	touch pdf
 	
+kitinsert.pdf: kitbooklet
+	$(MAKE) -C kitbooklet
+	mv kitbooklet/refman.pdf ./kitinsert.pdf
+	
+
+kitbooklet: ../main.cxx KitBooklet.h Revision.h Makefile \
+		Doxyfile.KitBooklet
+	doxygen Doxyfile.KitBooklet
+
 clean::
 	rm -rf latex html warnings man pdf
 	
