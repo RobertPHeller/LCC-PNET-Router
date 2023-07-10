@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Wed Mar 15 13:51:40 2023
-#  Last Modified : <230702.0955>
+#  Last Modified : <230710.1441>
 #
 #  Description	
 #
@@ -69,9 +69,9 @@ pdf: latex
 	$(MAKE) -C latex
 	touch pdf
 	
-kitinsert.pdf: kitbooklet
+kitinsert.pdf: kitbooklet kitinsert.tex
 	$(MAKE) -C kitbooklet
-	mv kitbooklet/refman.pdf ./kitinsert.pdf
+	pdflatex kitinsert.tex
 	
 
 kitbooklet: ../main.cxx KitBooklet.h Revision.h Makefile \
