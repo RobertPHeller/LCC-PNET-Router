@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Wed Mar 15 13:51:40 2023
-#  Last Modified : <230710.1441>
+#  Last Modified : <230711.0917>
 #
 #  Description	
 #
@@ -69,10 +69,10 @@ pdf: latex
 	$(MAKE) -C latex
 	touch pdf
 	
-kitinsert.pdf: kitbooklet kitinsert.tex
+kit-book.pdf: kitbooklet
 	$(MAKE) -C kitbooklet
-	pdflatex kitinsert.tex
-	
+	mv kitbooklet/refman.pdf kit.pdf
+	pdfbook2 kit.pdf	
 
 kitbooklet: ../main.cxx KitBooklet.h Revision.h Makefile \
 		Doxyfile.KitBooklet
